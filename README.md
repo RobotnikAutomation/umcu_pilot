@@ -20,19 +20,19 @@ This node implements the RB-1's state machine. The default state when starting t
 ### 1.1 Parameters
 
 * **`/sermas_pilot/proxsensor_sub` (string, default: `/sermas_pilot/proxsensor`)**\
-  Topic for subscribing to proximity sensor data.
+  Topic for subscribing to the Proximity Sensor data.
 
 * **`/sermas_pilot/rtls_sub` (string, default: `/sermas_pilot/RTLS`)**\
-  Topic for subscribing to Real-Time Location System data.
+  Topic for subscribing to the RTLS (Real-Time Location System) data.
 
 * **`/sermas_pilot/smartbox_sub` (string, default: `/sermas_pilot/smartbox`)**\
-  Topic for subscribing to smartbox status data.
+  Topic for subscribing to the Smartbox status data.
 
 * **`/sermas_pilot/hmi_sub` (string, default: `/sermas_pilot/hmi`)**\
-  Topic for subscribing to HMI data.
+  Topic for subscribing to the HMI data.
 
 * **`/sermas_pilot/elevator_sub` (string, default: `/robot/robotnik_base_control/elevator_status`)**\
-  Topic for subscribing to elevator status data.
+  Topic for subscribing to the elevator status data.
 
 * **`/sermas_pilot/pick_sequence` (string, default: `PICK_SEQUENCE`)**\
   Defines the pick sequence.
@@ -121,27 +121,27 @@ Services are provided for the transition between states:
 
 ### 1.5 Services Called
 
-No Service called
+No Service called.
 
 ### 1.6 Action Servers
 
-No Action Servers implemented
+No Action Servers implemented.
 
 ### 1.7 Action Clients Called
 
 * **`/robot/move_base` (move_base_msgs/MoveBaseAction)**\
-  This Action Client is used to automatically change state when the robot finishes navigation tasks.
+  Automatically changes state when the robot finishes navigation tasks.
 
 * **`/robot/command_sequencer/action` (robot_simple_command_manager_msgs/RobotSimpleCommandAction)**\
-  This Action Client is used to automatically change state when the robot finishes the picking, placing and releasing sequences.
+  Automatically changes state when the robot finishes the picking, placing and releasing sequences.
 
 ### 1.8 Required tf Transforms
 
-No tf required
+No tf required.
 
 ### 1.9 Provided tf Transforms
 
-No tf provided
+No tf provided.
 
 ### 1.10 Bringup
 
