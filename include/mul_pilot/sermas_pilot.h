@@ -58,9 +58,6 @@ protected:
 
   /*** ROS Stuff ***/
   //! Publishers
-  ros::Publisher status_pub_;
-  ros::Publisher status_stamped_pub_;
-
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;
 
@@ -69,7 +66,7 @@ protected:
 
   ros::Publisher state_machine_state_pub_;
   std_msgs::String current_state_data_;
- 
+
   //! Subscribers
   ros::Subscriber proxsensor_sub_;
   string proxsensor_sub_name_;

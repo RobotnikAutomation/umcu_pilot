@@ -39,8 +39,6 @@ int SermasPilot::rosSetup()
 
   /*** ROS Stuff ***/
   //! Publishers
-  status_pub_ = pnh_.advertise<std_msgs::String>("status", 10);
-  status_stamped_pub_ = pnh_.advertise<robotnik_msgs::StringStamped>("status_stamped", 10);
   robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
   state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/sermas_pilot/state_machine", 10);
@@ -103,13 +101,7 @@ void SermasPilot::rosPublish()
 
   if (getState() == robotnik_msgs::State::READY_STATE)
   {
-    robotnik_msgs::StringStamped status_stamped;
-
-    status_pub_.publish(status_);
-
-    status_stamped.header.stamp = ros::Time::now();
-    status_stamped.string = status_.data;
-    status_stamped_pub_.publish(status_stamped);
+    // Publishers
   }
 }
 
