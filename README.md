@@ -61,8 +61,14 @@ This node implements the RB-1's state machine. The default state when starting t
 
 ### 1.3 Published Topics
 
-* ~~foo/topic_name (std_msgs/String)\
-  topic description, including any important rate information~~
+* **`/sermas_pilot/robot_status` (odin_msgs/RobotStatus)**\
+  Publishes information about the robot status (battery level, current state and pose).
+
+* **`/sermas_pilot/robot_result` (odin_msgs/RobotTask)**\
+  Not used so far.
+
+* **`/sermas_pilot/state_machine` (std_msgs::String)**\
+  Publishes the state of the robot within the state machine.
 
 ### 1.4 Services
 
