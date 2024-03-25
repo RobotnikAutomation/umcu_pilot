@@ -5,6 +5,6 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "sermas_pilot");
   ros::NodeHandle n;
 
-  MulPilot sermas_pilot(n);
+  SermasPilot sermas_pilot(n);
   sermas_pilot.start();
 }
