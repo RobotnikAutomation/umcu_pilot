@@ -90,20 +90,34 @@ protected:
   string pose_sub_name_;
 
   //! Services Servers
-  ros::ServiceServer mission_received_srv_;
-  ros::ServiceServer elevator_down_srv_;
-  ros::ServiceServer rack_position_received_srv_;
-  ros::ServiceServer goal_calculated_srv_;
-  ros::ServiceServer arrived_at_rack_srv_;
-  ros::ServiceServer rack_picked_srv_;
-  ros::ServiceServer arrived_at_poi_srv_;
-  ros::ServiceServer go_to_lab_srv_;
-  ros::ServiceServer arrived_at_lab_srv_;
-  ros::ServiceServer release_rack_srv_;
-  ros::ServiceServer rack_homed_srv_;
-  ros::ServiceServer rack_placed_srv_;
-  ros::ServiceServer rack_released_srv_;
-  ros::ServiceServer arrived_at_home_srv_;
+  // _Pick Up_ mission
+  ros::ServiceServer pickup_mission_received_srv_;      // 1 --> 2
+  ros::ServiceServer elevator_down_srv_;                // 2 --> 3
+  ros::ServiceServer rack_position_received_srv_;       // 3 --> 4
+  ros::ServiceServer correct_position_srv_;             // 4 --> 3 (false), 5 (true)
+  ros::ServiceServer arrived_at_rack_srv_;              // 5 --> 6
+  ros::ServiceServer rack_picked_srv_;                  // 6 --> 7
+  ros::ServiceServer go_from_first_to_second_room_srv_; // 7 --> 8
+  ros::ServiceServer arrived_at_second_room_srv_;       // 8 --> 9
+  ros::ServiceServer release_rack_srv_;                 // 9, 11 --> 12 (false), 14 (true)
+  ros::ServiceServer go_from_second_to_next_room_srv_;  // 9 --> 10
+  ros::ServiceServer arrived_at_next_room_srv_;         // 10 --> 11
+  ros::ServiceServer go_to_next_room_srv_;              // 11 --> 10
+  ros::ServiceServer rack_released_srv_;                // 14 --> 15
+  ros::ServiceServer rack_homed_srv_;                   // 12 --> 13
+  ros::ServiceServer rack_placed_srv_;                  // 13 --> 15
+  ros::ServiceServer arrived_at_home_srv_;              // 15 (and 23) --> 1
+
+  // _Recharge_ mission
+  ros::ServiceServer recharge_mission_received_srv_; // 1 --> 16
+  ros::ServiceServer goal_calculated_srv_;           // 18 --> 19
+  ros::ServiceServer rack_charged_srv_;              // 21 --> 22
+  // ros::ServiceServer elevator_down_srv_;          // 16 --> 17
+  // ros::ServiceServer rack_position_received_srv_; // 17 --> 18
+  // ros::ServiceServer arrived_at_rack_srv_;        // 19 --> 20
+  // ros::ServiceServer rack_picked_srv_;            // 20 --> 21
+  // ros::ServiceServer rack_released_srv_;          // 22 --> 23
+  // ros::ServiceServer arrived_at_home_srv_;        // 23 (and 15) --> 1
 
   //! Services Clients
   // ros::ServiceClient out_of_battery_client_;
@@ -131,34 +145,47 @@ protected:
   void poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
 
   //! Service Callbacks
-  // WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-  bool missionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // CHECKING_ELEVATOR --> GETTING_RACK_POSITION or NAVIGATING_TO_POI
+  // _Pick Up mission
+  // 1. WAITING_FOR_MISSION --> 2. CHECKING_ELEVATOR
+  bool pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 2. CHECKING_ELEVATOR --> 3. GETTING_RACK_POSITION, or 16. CHECKING_ELEVATOR --> 17. GETTING_RACK_POSITION
   bool elevatorDownServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
-  // GETTING_RACK_POSITION --> CALCULATING_GOAL
+  // 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION
   bool rackPositionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // CALCULATING_GOAL --> NAVIGATING_TO_RACK
-  bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // NAVIGATING_TO_RACK --> PICKING_RACK
+  // 4. CHECKING_RACK_POSITION --> 3. GETTING_RACK_POSITION or 5. NAVIGATING_TO_RACK
+  bool correctPositionServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
+  // 5. NAVIGATING_TO_RACK --> 6. PICKING_RACK
   bool arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // PICKING_RACK --> NAVIGATING_TO_POI
+  // 6. PICKING_RACK --> 7. WAITING_IN_FIRST_ROOM
   bool rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // NAVIGATING_TO_POI --> WAITING_IN_POI
-  bool arrivedAtPoiServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // WAITING_IN_POI --> NAVIGATING_TO_LAB
-  bool goToLabServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // NAVIGATING_TO_LAB --> WAITING_IN_LAB
-  bool arrivedAtLabServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // WAITING_IN_LAB --> HOMING_RACK or RELEASING_RACK
+  // 7. WAITING_IN_FIRST_ROOM --> 8. NAVIGATING_TO_SECOND_ROOM
+  bool goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 8. NAVIGATING_TO_SECOND_ROOM --> 9. WAITING_IN_SECOND_ROOM
+  bool arrivedAtSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 9. WAITING_IN_SECOND ROOM or 11. WAITING_IN_NEXT_ROOM --> 12. HOMING_RACK or 14. RELEASING_RACK
   bool releaseRackServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
-  // HOMING_RACK --> PLACING_RACK
-  bool rackHomedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // PLACING_RACK --> NAVIGATING_TO_HOME
-  bool rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // RELEASING_RACK --> NAVIGATING_TO_HOME
+  // 9. WAITING_IN_SECOND_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
+  bool goFromSecondToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 10. NAVIGATING_TO_NEXT_ROOM --> 11. WAITING_IN_NEXT_ROOM
+  bool : arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
+  bool goToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 14. RELEASING_RACK --> 15. NAVIGATING_TO_HOME
   bool rackReleasedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
-  // NAVIGATING_TO_HOME --> WAITING_FOR_MISSION
+  // 12. HOMING_RACK --> 13. PLACING_RACK
+  bool rackHomedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 13. PLACING_RACK --> 15. NAVIGATING_TO_HOME
+  bool rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 15. NAVIGATING_TO_HOME (also 23) --> 1. WAITING_FOR_MISSION
   bool arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+
+  // _Recharge_ mission
+  // 1. WAITING_FOR_MISSION --> 16. CHECKING_ELEVATOR
+  bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 18. CALCULATING_GOAL --> 19. NAVIGATING_TO_RACK
+  bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  // 21. CHARGING_RACK --> 22. RELEASING_RACK
+  bool rackChargedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
 
   //! Action Callbacks
   void moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result);
