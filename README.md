@@ -14,7 +14,7 @@ This package depends on:
 This node implements the RB-1's state machine. The default state when starting the node is **WAITING_FOR_MISSION.**
 
 <p align="center">
-  <img src="docs/diagrams/sermas_pilot.svg" alt="RB-1's state machine" />
+  <img src="docs/diagrams/sermas_pilot.drawio.svg" alt="RB-1's state machine" />
 </p>
 
 ### 1.1 Parameters

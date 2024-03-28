@@ -1,0 +1,371 @@
+<mxfile host="app.diagrams.net" modified="2024-03-28T10:21:03.343Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36" etag="Y8Zpj1fHNc7Ujhf4PsLn" version="24.2.0" type="device">
+  <diagram name="Página-1" id="tiJnBkAvq628H8o1Q58x">
+    <mxGraphModel dx="4412" dy="2904" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Fw6eXdri5jR1bVx8PwAc-26" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeWidth=3;dashed=1;strokeColor=#FFB570;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="594" y="-1080" width="1000" height="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-1" target="iiVg7jSP5j8yRkG3yu6j-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-5" value="A &lt;i&gt;pick-up mission&lt;/i&gt; is received if we read &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;PICK UP RACK&lt;/font&gt;&lt;font face=&quot;Helvetica&quot;&gt;&quot;&lt;/font&gt;&lt;/b&gt;&amp;nbsp;from the HMI topic&lt;div&gt;&lt;div&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font color=&quot;#006600&quot; face=&quot;Courier New&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/pickup_mission_received&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];rounded=1;shadow=1;strokeColor=#82b366;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=#d5e8d4;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-3" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-2" target="J_Fv1XZy4IcKnYyplC5t-76" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="78" y="-590" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-17" value="The elevator is down (there is no rack on top of the RB-1)&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/elevator_down == True&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];rounded=1;shadow=1;strokeColor=#82b366;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=#d5e8d4;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-7" vertex="1" connectable="0">
+          <mxGeometry x="0.04" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-9" target="iiVg7jSP5j8yRkG3yu6j-13" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="41" y="-430.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-24" value="The RB-1 arrives at the rack&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/arrived_at_rack&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-14" vertex="1" connectable="0">
+          <mxGeometry x="-0.11" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="6" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-9" value="&lt;div&gt;&lt;b&gt;5. NAVIGATING_TO_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the &lt;i&gt;a priori&lt;/i&gt; known position of the rack&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="-190" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-13" target="iiVg7jSP5j8yRkG3yu6j-15" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-25" value="The RB-1 picks up the rack&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_picked&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-16" vertex="1" connectable="0">
+          <mxGeometry x="-0.0933" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-13" value="&lt;b&gt;6. PICKING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 picks up the rack&amp;nbsp;– &lt;i&gt;which should be in the docking station&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="10" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-15" target="iiVg7jSP5j8yRkG3yu6j-27" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-30" value="&lt;div style=&quot;&quot;&gt;The &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;GO TO ROOM &lt;i&gt;X&lt;/i&gt;&lt;/font&gt;&lt;/b&gt;&quot; is pressed in the HMI (e.g., &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;GO TO ROOM 2&lt;/font&gt;&lt;/b&gt;&quot;)&lt;/div&gt;&lt;div style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font color=&quot;#006600&quot; face=&quot;Courier New&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/go_to_next_room&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-28" vertex="1" connectable="0">
+          <mxGeometry x="0.09" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-32" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-27" target="iiVg7jSP5j8yRkG3yu6j-31" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-35" value="The RB-1 arrives at second room&lt;br&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/arrived_at_next_room&lt;/font&gt;&lt;/b&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-32" vertex="1" connectable="0">
+          <mxGeometry x="-0.0757" y="2" relative="1" as="geometry">
+            <mxPoint x="-2" y="3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-39" target="iiVg7jSP5j8yRkG3yu6j-55" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="333" y="1086.37" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="400" y="1060" />
+              <mxPoint x="400" y="860" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-36" value="&lt;div style=&quot;&quot;&gt;The &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;GO TO ROOM&amp;nbsp;&lt;i&gt;X&lt;/i&gt;&lt;/font&gt;&lt;/b&gt;&quot; is pressed in the HMI&lt;/div&gt;&lt;div style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/go_to_next_room&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-34" vertex="1" connectable="0">
+          <mxGeometry x="0.0251" y="-2" relative="1" as="geometry">
+            <mxPoint x="-2" y="3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-31" target="iiVg7jSP5j8yRkG3yu6j-49" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-39.999999999999815" y="849.8699999999999" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-26" value="&lt;span style=&quot;&quot;&gt;The &quot;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;RELEASE AND HOME&lt;/font&gt;&lt;/b&gt;&lt;span style=&quot;&quot;&gt;&quot; button is pressed in the HMI&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br style=&quot;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/release_rack == True&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-52" vertex="1" connectable="0">
+          <mxGeometry x="-0.0512" relative="1" as="geometry">
+            <mxPoint x="199" y="-33" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-40" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-55" target="iiVg7jSP5j8yRkG3yu6j-39" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="63" y="1332.8700000000001" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-45" value="The RB-1 arrives at the next room&lt;br&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/arrived_at_next_room&lt;/font&gt;&lt;/b&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=none;fillColor=none;gradientColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-40" vertex="1" connectable="0">
+          <mxGeometry x="0.0733" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.25;entryY=0;entryDx=0;entryDy=0;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-47" target="iiVg7jSP5j8yRkG3yu6j-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-580" y="-1050" />
+              <mxPoint x="23" y="-1050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-10" value="The RB-1 arrives at the HOME ROOM&lt;br&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/arrived_at_home&lt;/font&gt;&lt;/b&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];fontColor=default;labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-48" vertex="1" connectable="0">
+          <mxGeometry x="-0.9557" y="-2" relative="1" as="geometry">
+            <mxPoint x="-2" y="4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-47" value="&lt;b&gt;15. NAVIGATING_TO_HOME&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the HOME ROOM" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-690" y="410" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-51" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=blockThin;endFill=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-49" target="iiVg7jSP5j8yRkG3yu6j-47" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-6" value="The RB-1 releases the rack&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_released&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="iiVg7jSP5j8yRkG3yu6j-51" vertex="1" connectable="0">
+          <mxGeometry x="-0.0893" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-49" value="&lt;b&gt;14. RELEASING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 releases the rack" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-690" y="610" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="C1neorg5G3GPyqu301_0-7" target="C1neorg5G3GPyqu301_0-17" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-22" value="The RB-1 arrives at the rack&#39;s home position in the HOME ROOM&lt;br&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_homed&lt;/font&gt;&lt;/b&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="C1neorg5G3GPyqu301_0-18" vertex="1" connectable="0">
+          <mxGeometry x="-0.0791" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-7" value="&lt;b&gt;12. HOMING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 brings back the rack to the HOME ROOM" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="1210" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-31" target="C1neorg5G3GPyqu301_0-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="687.2" y="972.98" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="660" />
+              <mxPoint x="790" y="1260" />
+            </Array>
+            <mxPoint x="180.00000000000017" y="849.8699999999999" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-28" value="&lt;span style=&quot;&quot;&gt;The &quot;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;BRING RACK HOME&lt;/font&gt;&lt;/b&gt;&lt;span style=&quot;&quot;&gt;&quot; button is pressed in the HMI&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br style=&quot;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/release_rack == False&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="C1neorg5G3GPyqu301_0-8" vertex="1" connectable="0">
+          <mxGeometry x="0.4808" y="1" relative="1" as="geometry">
+            <mxPoint x="-466" y="-631" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-39" target="C1neorg5G3GPyqu301_0-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="78" y="1140" />
+              <mxPoint x="78" y="1140" />
+            </Array>
+            <mxPoint x="50" y="1366.8700000000001" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-21" value="The &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;BRING RACK HOME&lt;/font&gt;&lt;/b&gt;&quot; button is pressed in the HMI&lt;br&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font color=&quot;#006600&quot; face=&quot;Courier New&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/release_rack == False&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="C1neorg5G3GPyqu301_0-15" vertex="1" connectable="0">
+          <mxGeometry x="-0.7865" y="1" relative="1" as="geometry">
+            <mxPoint x="-1" y="36" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="C1neorg5G3GPyqu301_0-17" target="iiVg7jSP5j8yRkG3yu6j-47" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-760" y="1460" />
+              <mxPoint x="-760" y="460" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-27" value="The RB-1 places the rack&lt;br&gt;&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_placed&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="C1neorg5G3GPyqu301_0-19" vertex="1" connectable="0">
+          <mxGeometry x="-0.4728" y="2" relative="1" as="geometry">
+            <mxPoint x="453" y="-26" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-17" value="&lt;b&gt;13. PLACING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 places the rack" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="1410" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-39" target="iiVg7jSP5j8yRkG3yu6j-49" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="C1neorg5G3GPyqu301_0-23" value="&lt;span style=&quot;&quot;&gt;The &quot;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;RELEASE AND HOME&lt;/font&gt;&lt;/b&gt;&lt;span style=&quot;&quot;&gt;&quot; button is pressed in the HMI&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font color=&quot;#006600&quot; face=&quot;Courier New&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;br style=&quot;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/release_rack == True&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="C1neorg5G3GPyqu301_0-20" vertex="1" connectable="0">
+          <mxGeometry x="0.4912" y="-1" relative="1" as="geometry">
+            <mxPoint x="539" y="89" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="iiVg7jSP5j8yRkG3yu6j-1" target="sNzPgDdGcXbPc3zTveeI-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-4" value="&lt;span style=&quot;&quot;&gt;A &lt;i&gt;recharge mission&lt;/i&gt; is received if we read &quot;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;battery &amp;lt; 10.0&lt;/font&gt;&lt;font face=&quot;Helvetica&quot;&gt;&quot;&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;mqtt-odin-platform-smartbox-status-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/recharge_mission_received&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-2" vertex="1" connectable="0">
+          <mxGeometry x="-0.174" y="3" relative="1" as="geometry">
+            <mxPoint x="-170" y="-27" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-13" target="HWfTQyJPlszipbeX_W5_-4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1088" y="60" />
+              <mxPoint x="1088" y="60" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-3" value="&lt;span style=&quot;&quot;&gt;The rack is fully charged&lt;/span&gt;&lt;div&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font color=&quot;#006600&quot; face=&quot;Courier New&quot;&gt;mqtt-odin-platform-smartbox-status-kafka&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_charged&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="HWfTQyJPlszipbeX_W5_-1" vertex="1" connectable="0">
+          <mxGeometry x="-0.9559" y="-1" relative="1" as="geometry">
+            <mxPoint x="1" y="29" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-13" value="&lt;b&gt;21. CHARGING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 is charging the rack" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="10" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="HWfTQyJPlszipbeX_W5_-4" target="HWfTQyJPlszipbeX_W5_-8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1398" y="-50" />
+              <mxPoint x="1398" y="-50" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-7" value="&lt;span style=&quot;&quot;&gt;The RB-1 releases the rack&lt;/span&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_released&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="HWfTQyJPlszipbeX_W5_-5" vertex="1" connectable="0">
+          <mxGeometry x="-0.9709" y="4" relative="1" as="geometry">
+            <mxPoint x="4" y="-48" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-4" value="&lt;b&gt;22. RELEASING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 releases the rack" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="1288" y="10" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="HWfTQyJPlszipbeX_W5_-8" target="iiVg7jSP5j8yRkG3yu6j-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1398" y="-1050" />
+              <mxPoint x="133" y="-1050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="HWfTQyJPlszipbeX_W5_-8" value="&lt;b&gt;23. NAVIGATING_TO_HOME&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the HOME ROOM" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="1288" y="-190.5" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-1" target="sNzPgDdGcXbPc3zTveeI-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-17" value="&lt;span style=&quot;text-align: left;&quot;&gt;The elevator is down (there is no rack on top of the RB-1)&lt;/span&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/elevator_down == True&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-8" vertex="1" connectable="0">
+          <mxGeometry x="-0.0943" y="-1" relative="1" as="geometry">
+            <mxPoint x="141" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-5" target="sNzPgDdGcXbPc3zTveeI-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-24" value="&lt;span style=&quot;&quot;&gt;The location is received from the RTLS&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;kafka-odin-platform-iot-rtls-positions-mqtt&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;&lt;b&gt;/sermas_pilot/rack_position_received&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-7" vertex="1" connectable="0">
+          <mxGeometry x="-0.04" y="3" relative="1" as="geometry">
+            <mxPoint x="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-6" target="sNzPgDdGcXbPc3zTveeI-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-26" value="&lt;span style=&quot;text-align: left;&quot;&gt;The goal to pick up the rack is calculated&lt;/span&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/goal_calculated&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-10" vertex="1" connectable="0">
+          <mxGeometry x="-0.1435" y="3" relative="1" as="geometry">
+            <mxPoint x="97" y="8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-6" value="&lt;div&gt;&lt;b&gt;18. CALCULATING_GOAL&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 calculates which is the closest rack goal&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="-590.5" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-9" target="sNzPgDdGcXbPc3zTveeI-11" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-27" value="&lt;span style=&quot;&quot;&gt;The RB-1 arrives at the rack&lt;/span&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/arrived_at_rack&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-12" vertex="1" connectable="0">
+          <mxGeometry x="0.1153" y="5" relative="1" as="geometry">
+            <mxPoint x="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-9" value="&lt;div&gt;&lt;b&gt;19. NAVIGATING_TO_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the rack&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="-390.5" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" parent="1" source="sNzPgDdGcXbPc3zTveeI-11" target="sNzPgDdGcXbPc3zTveeI-13" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="698" y="9.499999999999545" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-28" value="&lt;span style=&quot;&quot;&gt;The RB-1 picks up the rack&lt;/span&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/rack_picked&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="sNzPgDdGcXbPc3zTveeI-14" vertex="1" connectable="0">
+          <mxGeometry x="0.0447" y="3" relative="1" as="geometry">
+            <mxPoint x="-3" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-11" value="&lt;b&gt;20. PICKING_RACK&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 picks up the rack&amp;nbsp;–&amp;nbsp;&lt;i&gt;which should be in the docking station&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="-190" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-1" value="&lt;b&gt;16. CHECKING_ELEVATOR&lt;/b&gt;&lt;br&gt;&lt;br&gt;The RB-1 checks the elevator state&lt;br&gt;(up or down)" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="-990" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-94" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" edge="1" parent="1" source="iiVg7jSP5j8yRkG3yu6j-31" target="iiVg7jSP5j8yRkG3yu6j-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-95" value="&lt;div style=&quot;&quot;&gt;The &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;GO TO ROOM X&lt;/font&gt;&lt;/b&gt;&quot; is pressed in the HMI (e.g., &quot;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;GO TO ROOM 3&lt;/font&gt;&lt;/b&gt;&quot;)&lt;/div&gt;&lt;div style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;b&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;mqtt-odin-platform-robot-control-kafka&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/go_to_next_room&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" connectable="0" parent="J_Fv1XZy4IcKnYyplC5t-94">
+          <mxGeometry x="-0.0421" y="-2" relative="1" as="geometry">
+            <mxPoint x="2" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-31" value="&lt;b&gt;9. WAITING_IN_SECOND_ROOM&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 waits in the second room while the consumables are collected" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="610" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-27" value="&lt;b&gt;8. NAVIGATING_TO_SECOND_ROOM&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the second room" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="410.00000000000006" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-15" value="&lt;b&gt;7. WAITING_IN_FIRST_ROOM&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 waits in the first room until it is told to navigate to the next room by the hospital staff" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="210" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-2" value="&lt;b&gt;2. CHECKING_ELEVATOR&lt;/b&gt;&lt;br&gt;&lt;br&gt;The RB-1 checks the elevator state&lt;br&gt;&lt;div&gt;(up or down)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="-790" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-1" value="&lt;b&gt;1. WAITING_FOR_MISSION&lt;/b&gt;&lt;br&gt;&lt;br&gt;The RB-1 waits for a mission in the HOME ROOM" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="-990" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-55" value="&lt;b&gt;10. NAVIGATING_TO_NEXT_ROOM&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 navigates to the next room" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="810" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="iiVg7jSP5j8yRkG3yu6j-39" value="&lt;b&gt;11. WAITING_IN_NEXT_ROOM&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 waits in the next room" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="-32" y="1010.0000000000001" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-5" value="&lt;b&gt;17. GETTING_RACK_POSITION&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;The RB-1 gets the approximate rack position from the RTLS&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="628" y="-790" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="sNzPgDdGcXbPc3zTveeI-23" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#0000ff&quot;&gt;&lt;b&gt;We may have the HOME ROOM and 3 other rooms, 2 of them with a docking station&lt;br&gt;The rack would be either in the HOME ROOM or in any of the 3 rooms&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" parent="1" vertex="1">
+          <mxGeometry x="848" y="-789.5" width="460" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-83" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" edge="1" parent="1" source="J_Fv1XZy4IcKnYyplC5t-76" target="J_Fv1XZy4IcKnYyplC5t-77">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-86" value="&lt;span style=&quot;&quot;&gt;The location is received from the RTLS&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;We read from&amp;nbsp;&lt;/span&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;kafka-odin-platform-iot-rtls-positions-mqtt&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot; color=&quot;#006600&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;&lt;b&gt;/sermas_pilot/rack_position_received&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" connectable="0" parent="J_Fv1XZy4IcKnYyplC5t-83">
+          <mxGeometry x="0.0512" y="3" relative="1" as="geometry">
+            <mxPoint x="-3" y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-76" value="&lt;b&gt;3. GETTING_RACK_POSITION&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;The RB-1 gets the approximate rack position from the RTLS&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-32" y="-590.5" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" edge="1" parent="1" source="J_Fv1XZy4IcKnYyplC5t-77" target="iiVg7jSP5j8yRkG3yu6j-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-90" value="&lt;span style=&quot;&quot;&gt;The rack is in the correct room (e.g., the distance between the RTLS-provided&lt;/span&gt;&lt;div&gt;coordinates and the &lt;i&gt;a priori&lt;/i&gt; known position is below 1 m)&lt;br style=&quot;&quot;&gt;&lt;br style=&quot;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/correct_position == True&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" connectable="0" parent="J_Fv1XZy4IcKnYyplC5t-84">
+          <mxGeometry x="-0.0953" y="-2" relative="1" as="geometry">
+            <mxPoint x="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-88" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" edge="1" parent="1" source="J_Fv1XZy4IcKnYyplC5t-77" target="J_Fv1XZy4IcKnYyplC5t-76">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-160" y="-341" />
+              <mxPoint x="-160" y="-541" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-89" value="The rack is not in the correct room&lt;br&gt;&lt;br&gt;&lt;b&gt;&lt;font face=&quot;Courier New&quot;&gt;/sermas_pilot/correct_position == False&lt;/font&gt;&lt;/b&gt;" style="edgeLabel;html=1;align=right;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;movable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" connectable="0" parent="J_Fv1XZy4IcKnYyplC5t-88">
+          <mxGeometry x="0.0115" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="J_Fv1XZy4IcKnYyplC5t-77" value="&lt;div&gt;&lt;b&gt;4. CHECKING_RACK_POSITION&lt;br&gt;&lt;/b&gt;&lt;br&gt;The RB-1 checks if the rack is in the correct room (ROOM 1)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;textShadow=0;shadow=1;fillColor=#d5e8d4;strokeColor=#82b366;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-32" y="-390.5" width="220" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
