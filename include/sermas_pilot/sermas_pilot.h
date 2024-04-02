@@ -60,37 +60,27 @@ protected:
   //! Publishers
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;
-
   ros::Publisher robot_result_pub_;
   string robot_result_pub_name_;
-
   ros::Publisher state_machine_state_pub_;
   std_msgs::String current_state_data_;
 
   //! Subscribers
-  ros::Subscriber proxsensor_sub_;
-  string proxsensor_sub_name_;
-
   ros::Subscriber smartbox_sub_;
   string smartbox_sub_name_;
-
   ros::Subscriber rtls_sub_;
   string rtls_sub_name_;
-
   ros::Subscriber hmi_sub_;
   string hmi_sub_name_;
-
   ros::Subscriber elevator_sub_;
   string elevator_sub_name_;
-
   ros::Subscriber battery_sub_;
   string battery_sub_name_;
-
   ros::Subscriber pose_sub_;
   string pose_sub_name_;
 
   //! Services Servers
-  // _Pick Up_ mission
+  // _Pick Up_ Mission
   ros::ServiceServer pickup_mission_received_srv_;      // 1 --> 2
   ros::ServiceServer elevator_down_srv_;                // 2 --> 3
   ros::ServiceServer rack_position_received_srv_;       // 3 --> 4
@@ -108,7 +98,7 @@ protected:
   ros::ServiceServer rack_placed_srv_;                  // 13 --> 15
   ros::ServiceServer arrived_at_home_srv_;              // 15 (and 23) --> 1
 
-  // _Recharge_ mission
+  // _Recharge_ Mission
   ros::ServiceServer recharge_mission_received_srv_; // 1 --> 16
   ros::ServiceServer goal_calculated_srv_;           // 18 --> 19
   ros::ServiceServer rack_charged_srv_;              // 21 --> 22
@@ -136,7 +126,6 @@ protected:
 
   //! Callbacks
   //! Subscription Callbacks
-  void proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg);
   void smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg);
   void rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg);
   void hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg);
@@ -145,12 +134,12 @@ protected:
   void poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
 
   //! Service Callbacks
-  // _Pick Up mission
+  // _Pick Up Mission
   // 1. WAITING_FOR_MISSION --> 2. CHECKING_ELEVATOR
   bool pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 2. CHECKING_ELEVATOR --> 3. GETTING_RACK_POSITION, or 16. CHECKING_ELEVATOR --> 17. GETTING_RACK_POSITION
   bool elevatorDownServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
-  // 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION
+  // 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION, or 17. GETTING_RACK_POSITION --> 18. CALCULATING_GOAL
   bool rackPositionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 4. CHECKING_RACK_POSITION --> 3. GETTING_RACK_POSITION or 5. NAVIGATING_TO_RACK
   bool correctPositionServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
@@ -167,7 +156,7 @@ protected:
   // 9. WAITING_IN_SECOND_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
   bool goFromSecondToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 10. NAVIGATING_TO_NEXT_ROOM --> 11. WAITING_IN_NEXT_ROOM
-  bool : arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
   bool goToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 14. RELEASING_RACK --> 15. NAVIGATING_TO_HOME
@@ -179,9 +168,9 @@ protected:
   // 15. NAVIGATING_TO_HOME (also 23) --> 1. WAITING_FOR_MISSION
   bool arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
 
-  // _Recharge_ mission
+  // _Recharge_ Mission
   // 1. WAITING_FOR_MISSION --> 16. CHECKING_ELEVATOR
-  bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool rechargeMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 18. CALCULATING_GOAL --> 19. NAVIGATING_TO_RACK
   bool goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 21. CHARGING_RACK --> 22. RELEASING_RACK
@@ -203,7 +192,7 @@ protected:
   void runRobotStateMachine();
   void changeState(const string &next_state, const string &additional_information);
 
-  //! WAITING_FOR_MISSION
+  //! 1. WAITING_FOR_MISSION
   void waitingForMissionState();
   bool mission_received_;
   float poi_x_{0.0};
@@ -213,10 +202,10 @@ protected:
   float home_x_{0.0};
   float home_y_{0.0};
 
-  //! CHECKING_ELEVATOR
+  //! 2. CHECKING_ELEVATOR, or 16. CHECKING_ELEVATOR
   void checkingElevatorState();
 
-  //! GETTING_RACK_POSITION
+  //! 3. GETTING_RACK_POSITION, or 17. GETTING_RACK_POSITION
   void gettingRackPositionState();
   double rack_x_{0.0};
   double rack_y_{0.0};
@@ -233,23 +222,23 @@ protected:
   double z_orient_goal{0.0};
   double w_orient_goal{0.0};
 
-  //! CALCULATING_GOAL
-  void calculatingGoalState();
+  // 4. CHECKING_RACK_POSITION
+  void checkingRackPositionState();
+  double room1_x_{0.0};
+  double room1_y_{0.0};
 
-  //! NAVIGATING_TO_RACK
+  //! 5. NAVIGATING_TO_RACK, or 19. NAVIGATING_TO_RACK
   void navigatingToRackState();
   bool navigation_command_sent_;
 
-  //! PICKING_RACK
+  //! 6. PICKING_RACK, or 20. PICKING_RACK
   void pickingRackState();
   string pick_sequence_;
   bool sequence_sent_;
 
-  //! NAVIGATING_TO_POI
-  void navigatingToPoiState();
-
-  //! WAITING_IN_POI
-  void waitingInPoiState();
+  //! 7. WAITING_IN_FIRST_ROOM
+  void waitingInFirstRoomState();
+  // TODO: change variable names
   float lab_pos_x_{0.0};
   float lab_pos_y_{0.0};
   float lab_pos_z_{0.0};
@@ -258,25 +247,37 @@ protected:
   float lab_ori_z_{0.0};
   float lab_ori_w_{0.0};
 
-  //! NAVIGATING_TO_LAB
-  void navigatingToLabState();
+  //! 8. NAVIGATING_TO_SECOND_ROOM
+  void navigatingToSecondRoomState();
 
-  //! WAITING_IN_LAB
-  void waitingInLabState();
+  //! 9. WAITING_IN_SECOND_ROOM
+  void waitingInSecondRoomState();
 
-  //! HOMING_RACK
+  //! 10. NAVIGATING_TO_NEXT_ROOM
+  void navigatingToNextRoomState();
+
+  //! 11. WAITING_IN_NEXT_ROOM
+  void waitingInNextRoomState();
+
+  //! 12. HOMING_RACK
   void homingRackState();
 
-  //! PLACING_RACK
+  //! 13. PLACING_RACK
   void placingRackState();
   string place_sequence_;
 
-  //! RELEASING_RACK
+  //! 14. RELEASING_RACK, or 22. RELEASING_RACK
   void releasingRackState();
   string release_sequence_;
 
-  //! NAVIGATING_TO_HOME
+  //! 15. NAVIGATING_TO_HOME, or 23. NAVIGATING_TO_HOME
   void navigatingToHomeState();
+
+  //! 18. CALCULATING_GOAL
+  void calculatingGoalState();
+
+  //! 21. CHARGING_RACK
+  void chargingRackState();
   /* SermasPilot Stuff !*/
 };
 

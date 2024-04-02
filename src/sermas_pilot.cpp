@@ -18,7 +18,6 @@ void SermasPilot::rosReadParams()
   readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
   readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/sermas_pilot/robot_status", required);
   readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/sermas_pilot/robot_result", required);
-  readParam(pnh_, "proxsensor_sub", proxsensor_sub_name_, "/sermas_pilot/proxsensor", required);
   readParam(pnh_, "rtls_sub", rtls_sub_name_, "/sermas_pilot/rtls", required);
   readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/sermas_pilot/smartbox", required);
   readParam(pnh_, "hmi_sub", hmi_sub_name_, "/sermas_pilot/hmi", required);
@@ -44,8 +43,6 @@ int SermasPilot::rosSetup()
   state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/sermas_pilot/state_machine", 10);
 
   //! Subscribers
-  proxsensor_sub_ = nh_.subscribe<odin_msgs::ProxSensor>(proxsensor_sub_name_, 10, &SermasPilot::proxsensorSubCb, this);
-  addTopicsHealth(&proxsensor_sub_, proxsensor_sub_name_, 50.0, not_required);
   smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &SermasPilot::smartboxSubCb, this);
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
   rtls_sub_ = nh_.subscribe<odin_msgs::RTLSBase>(rtls_sub_name_, 10, &SermasPilot::rtlsSubCb, this);
@@ -117,7 +114,7 @@ void SermasPilot::initState()
 {
   RComponent::initState();
 
-  current_state_ = "WAITING_FOR_MISSION";
+  current_state_ = "1. WAITING_FOR_MISSION";
   previous_state_ = "";
 
   navigation_command_sent_ = false;
@@ -174,61 +171,73 @@ void SermasPilot::failureState()
 /*** State Machine ***/
 void SermasPilot::runRobotStateMachine()
 {
-  if (current_state_ == "WAITING_FOR_MISSION")
+  if (current_state_ == "1. WAITING_FOR_MISSION")
   {
     waitingForMissionState();
   }
-  else if (current_state_ == "CHECKING_ELEVATOR")
+  else if (current_state_ == "2. CHECKING_ELEVATOR" || current_state_ == "16. CHECKING_ELEVATOR")
   {
     checkingElevatorState();
   }
-  else if (current_state_ == "GETTING_RACK_POSITION")
+  else if (current_state_ == "3. GETTING_RACK_POSITION" || current_state_ == "17. GETTING_RACK_POSITION")
   {
     gettingRackPositionState();
   }
-  else if (current_state_ == "CALCULATING_GOAL")
+  else if (current_state_ == "4. CHECKING_RACK_POSITION")
   {
-    calculatingGoalState();
+    checkingRackPositionState();
   }
-  else if (current_state_ == "NAVIGATING_TO_RACK")
+  else if (current_state_ == "5. NAVIGATING_TO_RACK" || current_state_ == "19. NAVIGATING_TO_RACK")
   {
     navigatingToRackState();
   }
-  else if (current_state_ == "PICKING_RACK")
+  else if (current_state_ == "6. PICKING_RACK" || current_state_ == "20. PICKING_RACK")
   {
     pickingRackState();
   }
-  else if (current_state_ == "NAVIGATING_TO_POI")
+  else if (current_state_ == "7. WAITING_IN_FIRST_ROOM")
   {
-    navigatingToPoiState();
+    waitingInFirstRoomState();
   }
-  else if (current_state_ == "WAITING_IN_POI")
+  else if (current_state_ == "8. NAVIGATING_TO_SECOND_ROOM")
   {
-    waitingInPoiState();
+    navigatingToSecondRoomState();
   }
-  else if (current_state_ == "NAVIGATING_TO_LAB")
+  else if (current_state_ == "9. WAITING_IN_SECOND_ROOM")
   {
-    navigatingToLabState();
+    waitingInSecondRoomState();
   }
-  else if (current_state_ == "WAITING_IN_LAB")
+  else if (current_state_ == "10. NAVIGATING_TO_NEXT_ROOM")
   {
-    waitingInLabState();
+    navigatingToNextRoomState();
   }
-  else if (current_state_ == "HOMING_RACK")
+  else if (current_state_ == "11. WAITING_IN_NEXT_ROOM")
+  {
+    waitingInNextRoomState();
+  }
+  else if (current_state_ == "12. HOMING_RACK")
   {
     homingRackState();
   }
-  else if (current_state_ == "PLACING_RACK")
+  else if (current_state_ == "13. PLACING_RACK")
   {
     placingRackState();
   }
-  else if (current_state_ == "RELEASING_RACK")
+  else if (current_state_ == "14. RELEASING_RACK" || current_state_ == "22. RELEASING_RACK")
   {
     releasingRackState();
   }
-  else if (current_state_ == "NAVIGATING_TO_HOME")
+  else if (current_state_ == "15. NAVIGATING_TO_HOME" || current_state_ == "23. NAVIGATING_TO_HOME")
   {
     navigatingToHomeState();
+  }
+  else if (current_state_ == "18. CALCULATING_GOAL")
+  {
+    calculatingGoalState();
+  }
+  else if (current_state_ == "21. CHARGING_RACK")
+  {
+    chargingRackState();
   }
   else
   {
@@ -262,34 +271,318 @@ void SermasPilot::changeState(const string &next_state, const string &additional
 
 /*** States ***/
 
-//! WAITING_FOR_MISSION
-// The RB-1 waits for a mission in its home position and stores POI coordinates when received
+//! 1. WAITING_FOR_MISSION
+// The RB-1 waits for a mission in the HOME ROOM
 void SermasPilot::waitingForMissionState()
 {
-  RCOMPONENT_INFO_STREAM("WAITING_FOR_MISSION");
+  RCOMPONENT_INFO_STREAM("1. WAITING_FOR_MISSION");
 }
 
-//! CHECKING_ELEVATOR
+//! 2. CHECKING_ELEVATOR, or 16. CHECKING_ELEVATOR
 // The RB-1 checks the elevator position (up or down)
 void SermasPilot::checkingElevatorState()
 {
-  RCOMPONENT_INFO_STREAM("CHECKING_ELEVATOR");
+  if (current_state_ == "2. CHECKING_ELEVATOR")
+  {
+    RCOMPONENT_INFO_STREAM("2. CHECKING_ELEVATOR");
+  }
+  else if (current_state_ == "16. CHECKING_ELEVATOR")
+  {
+    RCOMPONENT_INFO_STREAM("16. CHECKING_ELEVATOR");
+  }
 }
 
-//! GETTING_RACK_POSITION
+//! 3. GETTING_RACK_POSITION, or 17. GETTING_RACK_POSITION
 // The RB-1 gets the approximate rack position from the RTLS
 void SermasPilot::gettingRackPositionState()
 {
-  RCOMPONENT_INFO_STREAM("GETTING_RACK_POSITION");
+  if (current_state_ == "3. GETTING_RACK_POSITION")
+  {
+    RCOMPONENT_INFO_STREAM("3. GETTING_RACK_POSITION");
+  }
+  else if (current_state_ == "17. GETTING_RACK_POSITION")
+  {
+    RCOMPONENT_INFO_STREAM("17. GETTING_RACK_POSITION");
+  }
 }
 
-//! CALCULATING_GOAL
+//! 4. CHECKING_RACK_POSITION
+// The RB-1 checks if the rack is in the correct room (ROOM 1)
+// TODO: Check also the other room?
+void SermasPilot::checkingRackPositionState()
+{
+  RCOMPONENT_INFO_STREAM("4. CHECKING_RACK_POSITION");
+
+  double distance = std::sqrt(std::pow(rack_x_ - room1_x_, 2) + std::pow(rack_y_ - room1_y_, 2));
+
+  if (distance < 1.0)
+  {
+    RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of ROOM 1.");
+  }
+  else
+  {
+    RCOMPONENT_INFO_STREAM("The rack is not closer than 1 meter to the _a priori known position of ROOM 1.");
+  }
+
+  std_srvs::SetBool::Request correct_position_srv_request;
+  std_srvs::SetBool::Response correct_position_srv_response;
+  correct_position_srv_request.data = (distance < 1.0);
+
+  if (correctPositionServiceCb(correct_position_srv_request, correct_position_srv_response))
+  {
+    if (correct_position_srv_response.success)
+    {
+      RCOMPONENT_INFO_STREAM("Successfully switched from 4. CHECKING_RACK_POSITION");
+    }
+    else
+    {
+      RCOMPONENT_WARN_STREAM("Failed to switch from 4. CHECKING_RACK_POSITION: " << correct_position_srv_response.message.c_str());
+    }
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/correct_position");
+  }
+}
+
+//! 5. NAVIGATING_TO_RACK, or 19. NAVIGATING_TO_RACK
+// The RB-1 navigates to the _a priori_ known position of the rack
+void SermasPilot::navigatingToRackState()
+{
+  if (current_state_ == "5. NAVIGATING_TO_RACK")
+  {
+    RCOMPONENT_INFO_STREAM("5. NAVIGATING_TO_RACK");
+  }
+  else if (current_state_ == "19. NAVIGATING_TO_RACK")
+  {
+    RCOMPONENT_INFO_STREAM("19. NAVIGATING_TO_RACK");
+  }
+
+  if (!navigation_command_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
+
+    // TODO during pilot: Set the correct frame and coordinates
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.pose.position.x = x_goal_;
+    move_base_goal_.target_pose.pose.position.y = y_goal_;
+    move_base_goal_.target_pose.pose.position.z = z_goal_;
+    move_base_goal_.target_pose.pose.orientation.x = 0.0;
+    move_base_goal_.target_pose.pose.orientation.y = 0.0;
+    move_base_goal_.target_pose.pose.orientation.z = z_orient_goal;
+    move_base_goal_.target_pose.pose.orientation.w = w_orient_goal;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
+}
+
+//! 6. PICKING_RACK, or 20. PICKING_RACK
+// The RB-1 picks up the rack -- which should be in the docking station
+void SermasPilot::pickingRackState()
+{
+  if (current_state_ == "6. PICKING RACK")
+  {
+    RCOMPONENT_INFO_STREAM("6. PICKING_RACK");
+  }
+  else if (current_state_ == "20. PICKING_RACK")
+  {
+    RCOMPONENT_INFO_STREAM("20. PICKING_RACK");
+  }
+
+  if (!sequence_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending sequence to pick the rack...");
+
+    // TODO during pilot: Set correct command
+    command_sequencer_goal_.command.command = pick_sequence_;
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+
+    sequence_sent_ = true;
+  }
+}
+
+//! 7. WAITING_IN_FIRST_ROOM
+// The RB-1 waits in the first room until it is told to navigate to the next room by the hospital staff
+void SermasPilot::waitingInFirstRoomState()
+{
+  RCOMPONENT_INFO_STREAM("7. WAITING_IN_FIRST_ROOM");
+}
+
+//! 8. NAVIGATING_TO_SECOND_ROOM
+// The RB-1 navigates to the second room
+void SermasPilot::navigatingToSecondRoomState()
+{
+  // TODO: Change variable names, and set correct coordinates
+  RCOMPONENT_INFO_STREAM("8. NAVIGATING_TO_SECOND_ROOM");
+  if (!navigation_command_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the second room...");
+    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
+
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.pose.position.x = lab_pos_x_;
+    move_base_goal_.target_pose.pose.position.y = lab_pos_y_;
+    move_base_goal_.target_pose.pose.position.z = lab_pos_z_;
+    move_base_goal_.target_pose.pose.orientation.x = lab_ori_x_;
+    move_base_goal_.target_pose.pose.orientation.y = lab_ori_y_;
+    move_base_goal_.target_pose.pose.orientation.z = lab_ori_z_;
+    move_base_goal_.target_pose.pose.orientation.w = lab_ori_w_;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
+}
+
+//! 9. WAITING_IN_SECOND_ROOM
+// The RB-1 waits in the lab
+void SermasPilot::waitingInSecondRoomState()
+{
+  RCOMPONENT_INFO_STREAM("9. WAITING_IN_SECOND_ROOM");
+}
+
+//! 10. NAVIGATING_TO_NEXT_ROOM
+// The RB-1 navigates to the next room
+void SermasPilot::navigatingToNextRoomState()
+{
+  RCOMPONENT_INFO_STREAM("10. NAVIGATING_TO_NEXT_ROOM");
+  if (!navigation_command_sent_)
+  {
+    // TODO: Change variable names, and set correct coordinates
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the next room...");
+    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
+
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.pose.position.x = lab_pos_x_;
+    move_base_goal_.target_pose.pose.position.y = lab_pos_y_;
+    move_base_goal_.target_pose.pose.position.z = lab_pos_z_;
+    move_base_goal_.target_pose.pose.orientation.x = lab_ori_x_;
+    move_base_goal_.target_pose.pose.orientation.y = lab_ori_y_;
+    move_base_goal_.target_pose.pose.orientation.z = lab_ori_z_;
+    move_base_goal_.target_pose.pose.orientation.w = lab_ori_w_;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
+}
+
+//! 11. WAITING_IN_NEXT_ROOM
+// The RB-1 waits in the next room
+void SermasPilot::waitingInNextRoomState()
+{
+  RCOMPONENT_INFO_STREAM("11. WAITING_IN_NEXT_ROOM");
+}
+
+//! 12. HOMING_RACK
+// The RB-1 brings back the rack to the HOME ROOM
+// TODO during pilot: Set correct coordinates
+void SermasPilot::homingRackState()
+{
+  RCOMPONENT_INFO_STREAM("12. HOMING_RACK");
+  if (!navigation_command_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the HOME ROOM...");
+
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.pose.position.x = x_goal_;
+    move_base_goal_.target_pose.pose.position.y = y_goal_;
+    move_base_goal_.target_pose.pose.position.z = z_goal_;
+    move_base_goal_.target_pose.pose.orientation.x = 0.0;
+    move_base_goal_.target_pose.pose.orientation.y = 0.0;
+    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
+    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
+}
+
+//! 13. PLACING_RACK
+// The RB-1 places the rack
+void SermasPilot::placingRackState()
+{
+  RCOMPONENT_INFO_STREAM("13. PLACING_RACK");
+  if (!sequence_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending sequence to place the rack...");
+
+    // TODO during pilot: Set correct command
+    command_sequencer_goal_.command.command = place_sequence_;
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+
+    sequence_sent_ = true;
+  }
+}
+
+//! 14. RELEASING_RACK, or 22. RELEASING_RACK
+// The RB-1 releases the rack
+void SermasPilot::releasingRackState()
+{
+  if (current_state_ == "14. RELEASING_RACK")
+  {
+    RCOMPONENT_INFO_STREAM("14. RELEASING_RACK");
+  }
+  else if (current_state_ == "22. RELEASING_RACK")
+  {
+    RCOMPONENT_INFO_STREAM("22. RELEASING_RACK");
+  }
+
+  if (!sequence_sent_)
+  {
+    RCOMPONENT_INFO_STREAM("Sending sequence to release the rack...");
+
+    // TODO during pilot: Set correct command
+    command_sequencer_goal_.command.command = release_sequence_;
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+
+    sequence_sent_ = true;
+  }
+}
+
+//! 15. NAVIGATING_TO_HOME, or 23. NAVIGATING_TO_HOME
+// The RB-1 navigates to the HOME ROOM
+void SermasPilot::navigatingToHomeState()
+{
+  if (current_state_ == "15. NAVIGATING_TO_HOME")
+  {
+    RCOMPONENT_INFO_STREAM("15. NAVIGATING_TO_HOME");
+  }
+  else if (current_state_ == "23. NAVIGATING_TO_HOME")
+  {
+    RCOMPONENT_INFO_STREAM("23. NAVIGATING_TO_HOME");
+  }
+
+  if (!navigation_command_sent_)
+  {
+    // TODO during pilot: Set correct coordinates
+    RCOMPONENT_INFO_STREAM("Sending command to navigate to the HOME ROOM...");
+
+    move_base_goal_.target_pose.header.stamp = ros::Time::now();
+    move_base_goal_.target_pose.header.frame_id = "robot_map";
+    move_base_goal_.target_pose.pose.position.x = 0.953378100745;
+    move_base_goal_.target_pose.pose.position.y = 0.526700783056;
+    move_base_goal_.target_pose.pose.position.z = 0.0;
+    move_base_goal_.target_pose.pose.orientation.x = 0.0;
+    move_base_goal_.target_pose.pose.orientation.y = 0.0;
+    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
+    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+    navigation_command_sent_ = true;
+  }
+}
+
+//! 18. CALCULATING_GOAL
 // The RB-1 calculates which is the closest rack goal
 void SermasPilot::calculatingGoalState()
 {
-  RCOMPONENT_INFO_STREAM("CALCULATING_GOAL");
+  RCOMPONENT_INFO_STREAM("18. CALCULATING_GOAL");
 
-  // TODO: Get correct coordinates from docking station location
+  // TODO during pilot: Get correct coordinates from docking station location
   double distance1;
   distance1 = sqrt(pow(rack_x_ - x1_, 2) + pow(rack_y_ - y1_, 2) + pow(rack_z_ - z1_, 2));
 
@@ -320,11 +613,11 @@ void SermasPilot::calculatingGoalState()
   {
     if (goal_calculated_srv_response.success)
     {
-      RCOMPONENT_INFO_STREAM("Successfully switched from CALCULATING_GOAL to NAVIGATING_TO_RACK");
+      RCOMPONENT_INFO_STREAM("Successfully switched from 18. CALCULATING_GOAL to 19. NAVIGATING_TO_RACK");
     }
     else
     {
-      RCOMPONENT_WARN_STREAM("Failed to switch from CALCULATING_GOAL to NAVIGATING_TO_RACK: " << goal_calculated_srv_response.message.c_str());
+      RCOMPONENT_WARN_STREAM("Failed to switch from 18. CALCULATING_GOAL to 19. NAVIGATING_TO_RACK: " << goal_calculated_srv_response.message.c_str());
     }
   }
   else
@@ -333,194 +626,11 @@ void SermasPilot::calculatingGoalState()
   }
 }
 
-//! NAVIGATING_TO_RACK
-// The RB-1 navigates to the rack
-void SermasPilot::navigatingToRackState()
+//! 21. CHARGING_RACK
+// The RB-1 is charging the rack
+void SermasPilot::chargingRackState()
 {
-  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_RACK");
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
-
-    // TODO: Set the correct frame and coordinates
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = x_goal_;
-    move_base_goal_.target_pose.pose.position.y = y_goal_;
-    move_base_goal_.target_pose.pose.position.z = z_goal_;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = z_orient_goal;
-    move_base_goal_.target_pose.pose.orientation.w = w_orient_goal;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
-  }
-}
-
-//! PICKING_RACK
-// The RB-1 picks the rack
-void SermasPilot::pickingRackState()
-{
-  RCOMPONENT_INFO_STREAM("PICKING_RACK");
-  if (!sequence_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending sequence to pick the rack...");
-
-    // TODO: Set correct command
-    command_sequencer_goal_.command.command = pick_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
-
-    sequence_sent_ = true;
-  }
-}
-
-//! NAVIGATING_TO_POI
-// The RB-1 navigates to the POI position
-void SermasPilot::navigatingToPoiState()
-{
-  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_POI");
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the POI...");
-    RCOMPONENT_INFO_STREAM("x: " << poi_x_ << ", y: " << poi_y_);
-
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = poi_x_;
-    move_base_goal_.target_pose.pose.position.y = poi_y_;
-    move_base_goal_.target_pose.pose.position.z = 0.0;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.703345435322;
-    move_base_goal_.target_pose.pose.orientation.w = 0.710848224737;
-
-    RCOMPONENT_INFO_STREAM(move_base_goal_);
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
-  }
-}
-
-//! WAITING_IN_POI
-// The RB-1 waits in the POI position
-void SermasPilot::waitingInPoiState()
-{
-  RCOMPONENT_INFO_STREAM("WAITING_IN_POI");
-}
-
-//! NAVIGATING_TO_LAB
-// The RB-1 navigates to the lab
-void SermasPilot::navigatingToLabState()
-{
-  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_LAB");
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the lab...");
-    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
-
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = lab_pos_x_;
-    move_base_goal_.target_pose.pose.position.y = lab_pos_y_;
-    move_base_goal_.target_pose.pose.position.z = lab_pos_z_;
-    move_base_goal_.target_pose.pose.orientation.x = lab_ori_x_;
-    move_base_goal_.target_pose.pose.orientation.y = lab_ori_y_;
-    move_base_goal_.target_pose.pose.orientation.z = lab_ori_z_;
-    move_base_goal_.target_pose.pose.orientation.w = lab_ori_w_;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
-  }
-}
-
-//! WAITING_IN_LAB
-// The RB-1 waits in the lab
-void SermasPilot::waitingInLabState()
-{
-  RCOMPONENT_INFO_STREAM("WAITING_IN_LAB");
-}
-
-//! HOMING_RACK
-// The RB-1 brings back the rack to its initial position
-void SermasPilot::homingRackState()
-{
-  RCOMPONENT_INFO_STREAM("HOMING_RACK");
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack's home...");
-
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = x_goal_;
-    move_base_goal_.target_pose.pose.position.y = y_goal_;
-    move_base_goal_.target_pose.pose.position.z = z_goal_;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
-  }
-}
-
-//! PLACING_RACK
-// The RB-1 places the rack
-void SermasPilot::placingRackState()
-{
-  RCOMPONENT_INFO_STREAM("PLACING_RACK");
-  if (!sequence_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending sequence to place the rack...");
-
-    // TODO: Set correct command
-    command_sequencer_goal_.command.command = place_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
-
-    sequence_sent_ = true;
-  }
-}
-
-//! RELEASING_RACK
-// The RB-1 releases the rack
-void SermasPilot::releasingRackState()
-{
-  RCOMPONENT_INFO_STREAM("RELEASING_RACK");
-  if (!sequence_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending sequence to release the rack...");
-
-    // TODO: Set correct command
-    command_sequencer_goal_.command.command = release_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
-
-    sequence_sent_ = true;
-  }
-}
-
-//! NAVIGATING_TO_HOME
-// The RB-1 navigates to its home position
-void SermasPilot::navigatingToHomeState()
-{
-  RCOMPONENT_INFO_STREAM("NAVIGATING_TO_HOME");
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the home position...");
-
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = 0.953378100745;
-    move_base_goal_.target_pose.pose.position.y = 0.526700783056;
-    move_base_goal_.target_pose.pose.position.z = 0.0;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
-  }
+  RCOMPONENT_INFO_STREAM("21. CHARGING_RACK");
 }
 /* States !*/
 
@@ -529,17 +639,17 @@ void SermasPilot::navigatingToHomeState()
 //! 1. WAITING_FOR_MISSION --> 2. CHECKING_ELEVATOR
 bool SermasPilot::pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "WAITING_FOR_MISSION")
+  if (current_state_ == "1. WAITING_FOR_MISSION")
   {
-    changeState("CHECKING_ELEVATOR", "Mission received!");
+    changeState("2. CHECKING_ELEVATOR", "_Pick Up_ Mission received!");
     response.success = true;
-    response.message = "Mission received! Switching from WAITING_FOR_MISSION to CHECKING_ELEVATOR.";
+    response.message = "_Pick Up_ Mission received! Switching from 1. WAITING_FOR_MISSION to 2. CHECKING_ELEVATOR.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in WAITING_FOR_MISSION state!";
+    response.message = "Service called in inappropriate state, currently not in 1. WAITING_FOR_MISSION state!";
     return true;
   }
   return false;
@@ -548,262 +658,316 @@ bool SermasPilot::pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &req
 //! 2. CHECKING_ELEVATOR --> 3. GETTING_RACK_POSITION, or 16. CHECKING_ELEVATOR --> 17. GETTING_RACK_POSITION
 bool SermasPilot::elevatorDownServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
-  if (current_state_ == "CHECKING_ELEVATOR")
+  if (current_state_ == "2. CHECKING_ELEVATOR")
   {
     if (request.data)
     {
-      changeState("GETTING_RACK_POSITION", "The elevator is down!");
+      changeState("3. GETTING_RACK_POSITION", "The elevator is down!");
       response.success = true;
-      response.message = "The elevator is down! Switching from CHECKING_ELEVATOR to GETTING_RACK_POSITION.";
+      response.message = "The elevator is down! Switching from 2. CHECKING_ELEVATOR to 3. GETTING_RACK_POSITION.";
       return true;
     }
     else
     {
-      changeState("NAVIGATING_TO_POI", "The elevator is up!");
       response.success = true;
-      response.message = "The elevator is up! Switching from CHECKING_ELEVATOR to NAVIGATING_TO_POI.";
+      response.message = "The elevator is up! Waiting for the elevator to go down...";
+      return true;
+    }
+  }
+  else if (current_state_ == "16. CHECKING_ELEVATOR")
+  {
+    if (request.data)
+    {
+      changeState("17. GETTING_RACK_POSITION", "The elevator is down!");
+      response.success = true;
+      response.message = "The elevator is down! Switching from 16. CHECKING_ELEVATOR to 17. GETTING_RACK_POSITION.";
+      return true;
+    }
+    else
+    {
+      response.success = true;
+      response.message = "The elevator is up! Waiting for the elevator to go down...";
       return true;
     }
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in CHECKING_ELEVATOR state!";
+    response.message = "Service called in inappropriate state, currently not in CHECKING_ELEVATOR (2. or 16.) state!";
     return true;
   }
   return false;
 }
 
-//! 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION
+//! 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION, or 17. GETTING_RACK_POSITION --> 18. CALCULATING_GOAL
 bool SermasPilot::rackPositionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "GETTING_RACK_POSITION")
+  if (current_state_ == "3. GETTING_RACK_POSITION")
   {
-    changeState("CALCULATING_GOAL", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_) + ", z=" + std::to_string(rack_z_));
+    changeState("4. CHECKING_RACK_POSITION", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_) + ", z=" + std::to_string(rack_z_));
     response.success = true;
-    response.message = "Location received! Switching from GETTING_RACK_POSITION to CALCULATING_GOAL.";
+    response.message = "Location received! Switching from 3. GETTING_RACK_POSITION to 4. CHECKING_RACK_POSITION.";
+    return true;
+  }
+  else if (current_state_ == "17. GETTING_RACK_POSITION")
+  {
+    changeState("18. CALCULATING_GOAL", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_) + ", z=" + std::to_string(rack_z_));
+    response.success = true;
+    response.message = "Location received! Switching from 17. GETTING_RACK_POSITION to 18. CALCULATING_GOAL.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in GETTING_RACK_POSITION state!";
+    response.message = "Service called in inappropriate state, currently not in GETTING_RACK_POSITION (3. or 17.) state!";
     return true;
   }
   return false;
 }
 
 //! 4. CHECKING_RACK_POSITION --> 3. GETTING_RACK_POSITION or 5. NAVIGATING_TO_RACK
-// TODO: correct
 bool SermasPilot::correctPositionServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
-  // if (current_state_ == "WAITING_IN_LAB")
-  // {
-  //   if (request.data)
-  //   {
-  //     changeState("RELEASING_RACK", "The elevator is down!");
-  //     response.success = true;
-  //     response.message = "The elevator is down! Switching from WAITING_IN_LAB to RELEASING_RACK.";
-  //     return true;
-  //   }
-  //   else
-  //   {
-  //     changeState("HOMING_RACK", "The elevator is up!");
-  //     response.success = true;
-  //     response.message = "The elevator is up! Switching from WAITING_IN_LAB to HOMING_RACK.";
-  //     return true;
-  //   }
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in WAITING_IN_LAB state!";
-  //   return true;
-  // }
-  // return false;
-}
-
-//! 5. NAVIGATING_TO_RACK --> 6. PICKING_RACK
-bool SermasPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  if (current_state_ == "NAVIGATING_TO_RACK")
+  if (current_state_ == "4. CHECKING_RACK_POSITION")
   {
-    changeState("PICKING_RACK", "Arrived at rack!");
-    response.success = true;
-    response.message = "Arrived at rack! Switching from NAVIGATING_TO_RACK to PICKING_RACK.";
-    return true;
+    if (request.data)
+    {
+      changeState("5. NAVIGATING_TO_RACK", "The rack is in the correct room!");
+      response.success = true;
+      response.message = "The rack is in the correct room! Switching from 4. CHECKING_RACK_POSITION to 5. NAVIGATING_TO_RACK.";
+      return true;
+    }
+    else
+    {
+      changeState("3. GETTING_RACK_POSITION", "The rack is NOT in the correct room!");
+      response.success = true;
+      response.message = "The rack is NOT in the correct room! Switching from 4. CHECKING_RACK_POSITION to 3. GETTING_RACK_POSITION.";
+      return true;
+    }
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in NAVIGATING_TO_RACK state!";
+    response.message = "Service called in inappropriate state, currently not in 4. CHECKING_RACK_POSITION state!";
     return true;
   }
   return false;
 }
 
-//! 6. PICKING_RACK --> 7. WAITING_IN_FIRST_ROOM
-bool SermasPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+//! 5. NAVIGATING_TO_RACK --> 6. PICKING_RACK, or 19. NAVIGATING_TO_RACK --> 20. PICKING_RACK
+bool SermasPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "PICKING_RACK")
+  if (current_state_ == "5. NAVIGATING_TO_RACK")
   {
-    changeState("NAVIGATING_TO_POI", "Rack picked!");
+    changeState("6. PICKING_RACK", "Arrived at rack!");
     response.success = true;
-    response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
+    response.message = "Arrived at rack! Switching from 5. NAVIGATING_TO_RACK to 6. PICKING_RACK.";
+    return true;
+  }
+  else if (current_state_ == "19. NAVIGATING_TO_RACK")
+  {
+    changeState("20. PICKING_RACK", "Arrived at rack!");
+    response.success = true;
+    response.message = "Arrived at rack! Switching from 19. NAVIGATING_TO_RACK to 20. PICKING_RACK.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
+    response.message = "Service called in inappropriate state, currently not in NAVIGATING_TO_RACK (5. or 19.) state!";
+    return true;
+  }
+  return false;
+}
+
+//! 6. PICKING_RACK --> 7. WAITING_IN_FIRST_ROOM, or 20. PICKING_RACK --> 21. CHARGING_RACK
+bool SermasPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "6. PICKING_RACK")
+  {
+    changeState("7. WAITING_IN_FIRST_ROOM", "Rack picked!");
+    response.success = true;
+    response.message = "Rack picked! Switching from 6. PICKING_RACK to 7. WAITING_IN_FIRST_ROOM.";
+    return true;
+  }
+  else if (current_state_ == "20. PICKING_RACK")
+  {
+    changeState("21. CHARGING_RACK", "Rack picked!");
+    response.success = true;
+    response.message = "Rack picked! Switching from 20. PICKING_RACK to 21. CHARGING_RACK.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in PICKING_RACK (6. or 20.) state!";
     return true;
   }
   return false;
 }
 
 //! 7. WAITING_IN_FIRST_ROOM --> 8. NAVIGATING_TO_SECOND_ROOM
-// TODO: correct
 bool SermasPilot::goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  // if (current_state_ == "PICKING_RACK")
-  // {
-  //   changeState("NAVIGATING_TO_POI", "Rack picked!");
-  //   response.success = true;
-  //   response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
-  //   return true;
-  // }
-  // return false;
+  if (current_state_ == "7. WAITING_IN_FIRST_ROOM")
+  {
+    changeState("8. NAVIGATING_TO_SECOND_ROOM", "The 'GO TO ROOM 2' button is pressed in the HMI!");
+    response.success = true;
+    response.message = "The 'GO TO ROOM 2' button is pressed in the HMI! Switching from 7. WAITING_IN_FIRST_ROOM to 8. NAVIGATING_TO_SECOND_ROOM.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 7. WAITING_IN_FIRST_ROOM state!";
+    return true;
+  }
+  return false;
 }
 
 //! 8. NAVIGATING_TO_SECOND_ROOM --> 9. WAITING_IN_SECOND_ROOM
-// TODO: correct
 bool SermasPilot::arrivedAtSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  // if (current_state_ == "PICKING_RACK")
-  // {
-  //   changeState("NAVIGATING_TO_POI", "Rack picked!");
-  //   response.success = true;
-  //   response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
-  //   return true;
-  // }
-  // return false;
+  if (current_state_ == "8. NAVIGATING_TO_SECOND_ROOM")
+  {
+    changeState("9. WAITING_IN_SECOND_ROOM", "Arrived at second room!");
+    response.success = true;
+    response.message = "Arrived at second room! Switching from 8. NAVIGATING_TO_SECOND_ROOM to 9. WAITING_IN_SECOND_ROOM.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 8. NAVIGATING_TO_SECOND_ROOM state!";
+    return true;
+  }
+  return false;
 }
 
-//! 9. WAITING_IN_SECOND ROOM or 11. WAITING_IN_NEXT_ROOM --> 12. HOMING_RACK or 14. RELEASING_RACK
+//! 9. WAITING_IN_SECOND_ROOM or 11. WAITING_IN_NEXT_ROOM --> 12. HOMING_RACK or 14. RELEASING_RACK
 bool SermasPilot::releaseRackServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
-  if (current_state_ == "WAITING_IN_LAB")
+  if (current_state_ == "9. WAITING_IN_SECOND_ROOM")
   {
     if (request.data)
     {
-      changeState("RELEASING_RACK", "The elevator is down!");
+      changeState("14. RELEASING_RACK", "'RELEASE AND HOME' button was pressed!");
       response.success = true;
-      response.message = "The elevator is down! Switching from WAITING_IN_LAB to RELEASING_RACK.";
+      response.message = "'RELEASE AND HOME' button was pressed! Switching from 9. WAITING_IN_SECOND_ROOM to 14. RELEASING_RACK.";
       return true;
     }
     else
     {
-      changeState("HOMING_RACK", "The elevator is up!");
+      changeState("12. HOMING_RACK", "'BRING RACK HOME' button was pressed!");
       response.success = true;
-      response.message = "The elevator is up! Switching from WAITING_IN_LAB to HOMING_RACK.";
+      response.message = "'BRING RACK HOME' button was pressed! Switching from 9. WAITING_IN_SECOND_ROOM to 12. HOMING_RACK.";
+      return true;
+    }
+  }
+  else if (current_state_ == "11. WAITING_IN_NEXT_ROOM")
+  {
+    if (request.data)
+    {
+      changeState("14. RELEASING_RACK", "'RELEASE AND HOME' button was pressed!");
+      response.success = true;
+      response.message = "'RELEASE AND HOME' button was pressed! Switching from 11. WAITING_IN_NEXT_ROOM to 14. RELEASING_RACK.";
+      return true;
+    }
+    else
+    {
+      changeState("12. HOMING_RACK", "'BRING RACK HOME' button was pressed!");
+      response.success = true;
+      response.message = "'BRING RACK HOME' button was pressed! Switching from 11. WAITING_IN_NEXT_ROOM to 12. HOMING_RACK.";
       return true;
     }
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in WAITING_IN_LAB state!";
+    response.message = "Service called in inappropriate state, currently not in 9. WAITING_IN_SECOND_ROOM or 11. WAITING_IN_NEXT_ROOM state!";
     return true;
   }
   return false;
 }
 
 //! 9. WAITING_IN_SECOND_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
-// TODO: correct
 bool SermasPilot::goFromSecondToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  // if (current_state_ == "PICKING_RACK")
-  // {
-  //   changeState("NAVIGATING_TO_POI", "Rack picked!");
-  //   response.success = true;
-  //   response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
-  //   return true;
-  // }
-  // return false;
-}
-
-//! 10. NAVIGATING_TO_NEXT_ROOM --> 11. WAITING_IN_NEXT_ROOM
-// TODO: correct
-bool SermasPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  // if (current_state_ == "PICKING_RACK")
-  // {
-  //   changeState("NAVIGATING_TO_POI", "Rack picked!");
-  //   response.success = true;
-  //   response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
-  //   return true;
-  // }
-  // return false;
-}
-
-//! 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
-// TODO: correct
-bool SermasPilot::goToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  // if (current_state_ == "PICKING_RACK")
-  // {
-  //   changeState("NAVIGATING_TO_POI", "Rack picked!");
-  //   response.success = true;
-  //   response.message = "Rack picked! Switching from PICKING_RACK to NAVIGATING_TO_POI.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in PICKING_RACK state!";
-  //   return true;
-  // }
-  // return false;
-}
-
-//! 14. RELEASING_RACK --> 15. NAVIGATING_TO_HOME
-bool SermasPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  if (current_state_ == "RELEASING_RACK")
+  if (current_state_ == "9. WAITING_IN_SECOND_ROOM")
   {
-    changeState("NAVIGATING_TO_HOME", "Rack released!");
+    changeState("10. NAVIGATING_TO_NEXT_ROOM", "The 'GO TO ROOM X' button is pressed in the HMI!");
     response.success = true;
-    response.message = "Rack released! Switching from RELEASING_RACK to NAVIGATING_TO_HOME.";
+    response.message = "The 'GO TO ROOM X' button is pressed in the HMI!! Switching from 9. WAITING_IN_SECOND_ROOM to 10. NAVIGATING_TO_NEXT_ROOM.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in RELEASING_RACK state!";
+    response.message = "Service called in inappropriate state, currently not in 9. WAITING_IN_SECOND_ROOM state!";
+    return true;
+  }
+  return false;
+}
+
+//! 10. NAVIGATING_TO_NEXT_ROOM --> 11. WAITING_IN_NEXT_ROOM
+bool SermasPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "10. NAVIGATING_TO_NEXT_ROOM")
+  {
+    changeState("11. WAITING_IN_NEXT_ROOM", "Arrived at next room!");
+    response.success = true;
+    response.message = "Arrived at next room! Switching from 10. NAVIGATING_TO_NEXT_ROOM to 11. WAITING_IN_NEXT_ROOM.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 10. NAVIGATING_TO_NEXT_ROOM state!";
+    return true;
+  }
+  return false;
+}
+
+//! 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
+bool SermasPilot::goToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "11. WAITING_IN_NEXT_ROOM")
+  {
+    changeState("10. NAVIGATING_TO_NEXT_ROOM", "Rack picked!");
+    response.success = true;
+    response.message = "Rack picked! Switching from 11. WAITING_IN_NEXT_ROOM to 10. NAVIGATING_TO_NEXT_ROOM.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 11. WAITING_IN_NEXT_ROOM state!";
+    return true;
+  }
+  return false;
+}
+
+//! 14. RELEASING_RACK --> 15. NAVIGATING_TO_HOME, or 22. RELEASING_RACK to 23. NAVIGATING_TO_HOME
+bool SermasPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "14. RELEASING_RACK")
+  {
+    changeState("15. NAVIGATING_TO_HOME", "Rack released!");
+    response.success = true;
+    response.message = "Rack released! Switching from 15. NAVIGATING_TO_HOME to 16. NAVIGATING_TO_HOME.";
+    return true;
+  }
+  else if (current_state_ == "22. RELEASING_RACK")
+  {
+    changeState("23. NAVIGATING_TO_HOME", "Rack released!");
+    response.success = true;
+    response.message = "Rack released! Switching from 22. RELEASING_RACK to 23. NAVIGATING_TO_HOME.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in NAVIGATING_TO_HOME (15. or 22.) state!";
     return true;
   }
   return false;
@@ -812,17 +976,17 @@ bool SermasPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std
 //! 12. HOMING_RACK --> 13. PLACING_RACK
 bool SermasPilot::rackHomedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "HOMING_RACK")
+  if (current_state_ == "12. HOMING_RACK")
   {
-    changeState("PLACING_RACK", "Rack homed!");
+    changeState("13. PLACING_RACK", "Rack homed!");
     response.success = true;
-    response.message = "Rack homed! Switching from HOMING_RACK to PLACING_RACK.";
+    response.message = "Rack homed! Switching from 12. HOMING_RACK to 13. PLACING_RACK.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in HOMING_RACK state!";
+    response.message = "Service called in inappropriate state, currently not in 12. HOMING_RACK state!";
     return true;
   }
   return false;
@@ -831,36 +995,43 @@ bool SermasPilot::rackHomedServiceCb(std_srvs::Trigger::Request &request, std_sr
 //! 13. PLACING_RACK --> 15. NAVIGATING_TO_HOME
 bool SermasPilot::rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "PLACING_RACK")
+  if (current_state_ == "13. PLACING_RACK")
   {
-    changeState("NAVIGATING_TO_HOME", "Rack placed!");
+    changeState("15. NAVIGATING_TO_HOME", "Rack placed!");
     response.success = true;
-    response.message = "Rack placed! Switching from PLACING_RACK to NAVIGATING_TO_HOME.";
+    response.message = "Rack placed! Switching from 13. PLACING_RACK to 15. NAVIGATING_TO_HOME.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in PLACING_RACK state!";
+    response.message = "Service called in inappropriate state, currently not in 13. PLACING_RACK state!";
     return true;
   }
   return false;
 }
 
-//! 15. NAVIGATING_TO_HOME (also 23) --> 1. WAITING_FOR_MISSION
+//! 15. NAVIGATING_TO_HOME or 23. NAVIGATING_TO_HOME --> 1. WAITING_FOR_MISSION
 bool SermasPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  if (current_state_ == "NAVIGATING_TO_HOME")
+  if (current_state_ == "15. NAVIGATING_TO_HOME")
   {
-    changeState("WAITING_FOR_MISSION", "Arrived at home!");
+    changeState("1. WAITING_FOR_MISSION", "Arrived at home!");
     response.success = true;
-    response.message = "Arrived at home! Switching from NAVIGATING_TO_HOME to WAITING_FOR_MISSION.";
+    response.message = "Arrived at home! Switching from 15. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION.";
+    return true;
+  }
+  else if (current_state_ == "23. NAVIGATING_TO_HOME")
+  {
+    changeState("1. WAITING_FOR_MISSION", "Arrived at home!");
+    response.success = true;
+    response.message = "Arrived at home! Switching from 23. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in NAVIGATING_TO_HOME state!";
+    response.message = "Service called in inappropriate state, currently not in NAVIGATING_TO_HOME (15. or 23.) state!";
     return true;
   }
   return false;
@@ -868,145 +1039,132 @@ bool SermasPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, st
 
 // _Recharge_ Mission
 //! 1. WAITING_FOR_MISSION --> 16. CHECKING_ELEVATOR
-// TODO: correct
-bool SermasPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool SermasPilot::rechargeMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  // if (current_state_ == "CALCULATING_GOAL")
-  // {
-  //   changeState("NAVIGATING_TO_RACK", "Goal calculated!");
-  //   response.success = true;
-  //   response.message = "Goal calculated! Switching from CALCULATING_GOAL to NAVIGATING_TO_RACK.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in CALCULATING_GOAL state!";
-  //   return true;
-  // }
-  // return false;
-}
-
-//! 18. CALCULATING_GOAL --> 19. NAVIGATING_TO_RACK
-bool SermasPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
-{
-  if (current_state_ == "CALCULATING_GOAL")
+  if (current_state_ == "1. WAITING_FOR_MISSION")
   {
-    changeState("NAVIGATING_TO_RACK", "Goal calculated!");
+    changeState("16. CHECKING_ELEVATOR", "Goal calculated!");
     response.success = true;
-    response.message = "Goal calculated! Switching from CALCULATING_GOAL to NAVIGATING_TO_RACK.";
+    response.message = "Goal calculated! Switching from 1. WAITING_FOR_MISSION to 16. CHECKING_ELEVATOR.";
     return true;
   }
   else
   {
     response.success = false;
-    response.message = "Service called in inappropriate state, currently not in CALCULATING_GOAL state!";
+    response.message = "Service called in inappropriate state, currently not in 1. WAITING_FOR_MISSION state!";
+    return true;
+  }
+  return false;
+}
+
+//! 18. CALCULATING_GOAL --> 19. NAVIGATING_TO_RACK
+bool SermasPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+{
+  if (current_state_ == "18. CALCULATING_GOAL")
+  {
+    changeState("19. NAVIGATING_TO_RACK", "Goal calculated!");
+    response.success = true;
+    response.message = "Goal calculated! Switching from 18. CALCULATING_GOAL to 19. NAVIGATING_TO_RACK.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 18. CALCULATING_GOAL state!";
     return true;
   }
   return false;
 }
 
 //! 21. CHARGING_RACK --> 22. RELEASING_RACK
-// TODO: correct
 bool SermasPilot::rackChargedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
-  // if (current_state_ == "CALCULATING_GOAL")
-  // {
-  //   changeState("NAVIGATING_TO_RACK", "Goal calculated!");
-  //   response.success = true;
-  //   response.message = "Goal calculated! Switching from CALCULATING_GOAL to NAVIGATING_TO_RACK.";
-  //   return true;
-  // }
-  // else
-  // {
-  //   response.success = false;
-  //   response.message = "Service called in inappropriate state, currently not in CALCULATING_GOAL state!";
-  //   return true;
-  // }
-  // return false;
+  if (current_state_ == "21. CHARGING_RACK")
+  {
+    changeState("22. RELEASING_RACK", "Goal calculated!");
+    response.success = true;
+    response.message = "Goal calculated! Switching from 21. CHARGING_RACK to 22. RELEASING_RACK.";
+    return true;
+  }
+  else
+  {
+    response.success = false;
+    response.message = "Service called in inappropriate state, currently not in 21. CHARGING_RACK state!";
+    return true;
+  }
+  return false;
 }
 /* Transitions !*/
 
 /* Callbacks */
 //! Subscription Callbacks
-// WAITING_FOR_MISSION --> CHECKING_ELEVATOR
-void SermasPilot::proxsensorSubCb(const odin_msgs::ProxSensor::ConstPtr &msg)
-{
-  if (current_state_ == "WAITING_FOR_MISSION")
-  {
-    std::string message = msg->message;
-    RCOMPONENT_WARN_STREAM("Received message from Proximity Sensor: " + message);
-
-    if (message == "action needed")
-    {
-      std_srvs::TriggerRequest pickup_mission_received_srv_request;
-      std_srvs::TriggerResponse pickup_mission_received_srv_response;
-
-      poi_x_ = msg->data.Posx;
-      poi_y_ = msg->data.Posy;
-      RCOMPONENT_WARN_STREAM("POI coordinates: x=" << poi_x_ << ", y=" << poi_y_);
-
-      if (pickupMissionReceivedServiceCb(pickup_mission_received_srv_request, pickup_mission_received_srv_response))
-      {
-        if (pickup_mission_received_srv_response.success)
-        {
-          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_FOR_MISSION to CHECKING_ELEVATOR");
-        }
-        else
-        {
-          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_FOR_MISSION to CHECKING_ELEVATOR: " << pickup_mission_received_srv_response.message.c_str());
-        }
-      }
-      else
-      {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/mission_received");
-      }
-    }
-  }
-  tickTopicsHealth(proxsensor_sub_name_);
-}
-
-// WAITING_FOR_MISSION --> CHECKING_ELEVATOR
+// 1. WAITING_FOR_MISSION --> 16. CHECKING_ELEVATOR
+// TODO: Correct function
 void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 {
-  if (current_state_ == "WAITING_FOR_MISSION")
+  if (current_state_ == "1. WAITING_FOR_MISSION")
   {
     float battery = msg->data.battery;
 
     if (battery < 10.0)
     {
-      std_srvs::TriggerRequest pickup_mission_received_srv_request;
-      std_srvs::TriggerResponse pickup_mission_received_srv_response;
+      std_srvs::TriggerRequest recharge_mission_received_srv_request;
+      std_srvs::TriggerResponse recharge_mission_received_srv_response;
 
-      if (pickupMissionReceivedServiceCb(pickup_mission_received_srv_request, pickup_mission_received_srv_response))
+      if (rechargeMissionReceivedServiceCb(recharge_mission_received_srv_request, recharge_mission_received_srv_response))
       {
-        if (pickup_mission_received_srv_response.success)
+        if (recharge_mission_received_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_FOR_MISSION to CHECKING_ELEVATOR");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 1. WAITING_FOR_MISSION to 16. CHECKING_ELEVATOR");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_FOR_MISSION to CHECKING_ELEVATOR: " << pickup_mission_received_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 1. WAITING_FOR_MISSION to 16. CHECKING_ELEVATOR: " << recharge_mission_received_srv_response.message.c_str());
         }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/mission_received");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/recharge_mission_received");
+      }
+    }
+  }
+  else if (current_state_ == "21. CHARGING_RACK")
+  {
+    float battery = msg->data.battery;
+
+    if (battery > 90.0)
+    {
+      std_srvs::TriggerRequest rack_charged_srv_request;
+      std_srvs::TriggerResponse rack_charged_srv_response;
+
+      if (rackChargedServiceCb(rack_charged_srv_request, rack_charged_srv_response))
+      {
+        if (rack_charged_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 21. CHARGING_RACK to 22. RELEASING_RACK");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 21. CHARGING_RACK to 22. RELEASING_RACK: " << rack_charged_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_charged");
       }
     }
   }
   tickTopicsHealth(smartbox_sub_name_);
 }
 
-// CHECKING_ELEVATOR --> GETTING_RACK_POSITION or NAVIGATING_TO_POI
+// 2. CHECKING_ELEVATOR --> 3. GETTING_RACK_POSITION, or 16. CHECKING_ELEVATOR --> 17. GETTING_RACK_POSITION
 void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg)
 {
-  if (current_state_ == "CHECKING_ELEVATOR")
+  if (current_state_ == "2. CHECKING_ELEVATOR")
   {
     std::string message = msg->position;
     RCOMPONENT_WARN_STREAM("Received message from Elevator: " + message);
 
-    // CHECKING_ELEVATOR --> GETTING_RACK_POSITION
     if (message == "down")
     {
       std_srvs::SetBoolRequest elevator_down_srv_request;
@@ -1018,11 +1176,11 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
       {
         if (elevator_down_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from CHECKING_ELEVATOR to GETTING_RACK_POSITION");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 2. CHECKING_ELEVATOR to 3. GETTING_RACK_POSITION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from CHECKING_ELEVATOR to GETTING_RACK_POSITION: " << elevator_down_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 2. CHECKING_ELEVATOR to 3. GETTING_RACK_POSITION: " << elevator_down_srv_response.message.c_str());
         }
       }
       else
@@ -1030,24 +1188,33 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
         RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/elevator_down");
       }
     }
-
-    // CHECKING_ELEVATOR --> NAVIGATING_TO_POI
     else if (message == "up")
+    {
+      RCOMPONENT_ERROR_STREAM("Elevator is up, waiting for it to go down...");
+      // TODO: set the elevator down
+    }
+  }
+  else if (current_state_ == "16. CHECKING_ELEVATOR")
+  {
+    std::string message = msg->position;
+    RCOMPONENT_WARN_STREAM("Received message from Elevator: " + message);
+
+    if (message == "down")
     {
       std_srvs::SetBoolRequest elevator_down_srv_request;
       std_srvs::SetBoolResponse elevator_down_srv_response;
 
-      elevator_down_srv_request.data = false;
+      elevator_down_srv_request.data = true;
 
       if (elevatorDownServiceCb(elevator_down_srv_request, elevator_down_srv_response))
       {
         if (elevator_down_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from CHECKING_ELEVATOR to NAVIGATING_TO_POI");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 16. CHECKING_ELEVATOR to 17. GETTING_RACK_POSITION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from CHECKING_ELEVATOR to NAVIGATING_TO_POI: " << elevator_down_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 16. CHECKING_ELEVATOR to 17. GETTING_RACK_POSITION: " << elevator_down_srv_response.message.c_str());
         }
       }
       else
@@ -1055,15 +1222,21 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
         RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/elevator_down");
       }
     }
+    else if (message == "up")
+    {
+      RCOMPONENT_ERROR_STREAM("Elevator is up, waiting for it to go down...");
+      // TODO: set the elevator down
+    }
   }
   tickTopicsHealth(elevator_sub_name_);
 }
 
-// GETTING_RACK_POSITION --> CALCULATING_GOAL
+// 3. GETTING_RACK_POSITION --> 4. CHECKING_RACK_POSITION, or 17. GETTING_RACK_POSITION --> 18. CALCULATING_GOAL
 void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
-  if (current_state_ == "GETTING_RACK_POSITION")
+  if (current_state_ == "3. GETTING_RACK_POSITION")
   {
+    // TODO during pilot: Set correct ID
     if (msg->data.id == "ble-pd-601283DE0245" or msg->data.id == "ble-pd-601283DE0246")
     {
       rack_x_ = msg->data.data.x;
@@ -1077,11 +1250,40 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
       {
         if (rack_position_received_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from GETTING_RACK_POSITION to CALCULATING_GOAL");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 3. GETTING_RACK_POSITION to 4. CHECKING_RACK_POSITION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from GETTING_RACK_POSITION to CALCULATING_GOAL: " << rack_position_received_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 3. GETTING_RACK_POSITION to 4. CHECKING_RACK_POSITION: " << rack_position_received_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_position_received");
+      }
+    }
+  }
+  else if (current_state_ == "17. GETTING_RACK_POSITION")
+  {
+    // TODO during pilot: Set correct IDs and parametrize them
+    if (msg->data.id == "ble-pd-601283DE0245" or msg->data.id == "ble-pd-601283DE0246")
+    {
+      rack_x_ = msg->data.data.x;
+      rack_y_ = msg->data.data.y;
+      rack_z_ = msg->data.data.z;
+
+      std_srvs::TriggerRequest rack_position_received_srv_request;
+      std_srvs::TriggerResponse rack_position_received_srv_response;
+
+      if (rackPositionReceivedServiceCb(rack_position_received_srv_request, rack_position_received_srv_response))
+      {
+        if (rack_position_received_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 17. GETTING_RACK_POSITION to 18. CALCULATING_GOAL");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 17. GETTING_RACK_POSITION to 18. CALCULATING_GOAL: " << rack_position_received_srv_response.message.c_str());
         }
       }
       else
@@ -1095,13 +1297,44 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 
 void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 {
-  // WAITING_IN_POI --> NAVIGATING_TO_LAB
-  if (current_state_ == "WAITING_IN_POI")
+  // TODO: Parametrize messages
+  // 1. WAITING_FOR_MISSION --> 2. CHECKING_ELEVATOR
+  if (current_state_ == "1. WAITING_FOR_MISSION")
   {
     std::string message = msg->data.data.taskType;
-    RCOMPONENT_WARN_STREAM("Received GO_TO_LAB from HMI");
+    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-    if (message == "GO_TO_LAB")
+    if (message == "PICK UP RACK")
+    {
+      std_srvs::TriggerRequest pickup_mission_received_srv_request;
+      std_srvs::TriggerResponse pickup_mission_received_srv_response;
+
+      if (pickupMissionReceivedServiceCb(pickup_mission_received_srv_request, pickup_mission_received_srv_response))
+      {
+        if (pickup_mission_received_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 1. WAITING_FOR_MISSION to 2. CHECKING_ELEVATOR");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 1. WAITING_FOR_MISSION to 2. CHECKING_ELEVATOR: " << pickup_mission_received_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/pickup_mission_received");
+      }
+    }
+  }
+
+  // 7. WAITING_IN_FIRST_ROOM --> 8. NAVIGATING_TO_SECOND_ROOM
+  else if (current_state_ == "7. WAITING_IN_FIRST_ROOM")
+  {
+    std::string message = msg->data.data.taskType;
+    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
+    // TODO: Add other rooms?
+    if (message == "GO TO ROOM 2")
     {
       if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
       {
@@ -1119,65 +1352,63 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
         return;
       }
 
-      std_srvs::TriggerRequest go_to_lab_srv_request;
-      std_srvs::TriggerResponse go_to_lab_srv_response;
+      std_srvs::TriggerRequest go_from_first_to_second_room_srv_request;
+      std_srvs::TriggerResponse go_from_first_to_second_room_srv_response;
 
-      if (goToLabServiceCb(go_to_lab_srv_request, go_to_lab_srv_response))
+      if (goFromFirstToSecondRoomServiceCb(go_from_first_to_second_room_srv_request, go_from_first_to_second_room_srv_response))
       {
-        if (go_to_lab_srv_response.success)
+        if (go_from_first_to_second_room_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_IN_POI to NAVIGATING_TO_LAB");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 7. WAITING_IN_FIRST_ROOM to 8. NAVIGATING_TO_SECOND_ROOM");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_IN_POI to NAVIGATING_TO_LAB: " << go_to_lab_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 7. WAITING_IN_FIRST_ROOM to 8. NAVIGATING_TO_SECOND_ROOM: " << go_from_first_to_second_room_srv_response.message.c_str());
         }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_to_lab");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_first_to_second_room");
       }
     }
   }
 
-  // WAITING_IN_LAB --> RELEASING_RACK or HOMING_RACK
-  if (current_state_ == "WAITING_IN_LAB")
+  // 9. WAITING_IN_SECOND_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM, 12. HOMING_RACK, or 14. RELEASING_RACK
+  if (current_state_ == "9. WAITING_IN_SECOND_ROOM")
   {
     std::string message = msg->data.data.taskType;
-    float message_2 = msg->data.data.endLocation.position[0];
-    // RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-    // WAITING_IN_LAB --> RELEASING_RACK
-    if (message == "RELEASE_AND_HOME")
+    // 9. WAITING_IN_SECOND_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
+    // TODO: Add all possible rooms?
+    if (message == "GO TO ROOM X")
     {
-      RCOMPONENT_WARN_STREAM("Received RELEASE_AND_HOME from HMI");
-      std_srvs::SetBoolRequest release_and_home_srv_request;
-      std_srvs::SetBoolResponse release_and_home_srv_response;
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-      release_and_home_srv_request.data = true;
+      std_srvs::TriggerRequest go_from_second_to_next_srv_request;
+      std_srvs::TriggerResponse go_from_second_to_next_srv_response;
 
-      if (releaseRackServiceCb(release_and_home_srv_request, release_and_home_srv_response))
+      if (goFromSecondToNextRoomServiceCb(go_from_second_to_next_srv_request, go_from_second_to_next_srv_response))
       {
-        if (release_and_home_srv_response.success)
+        if (go_from_second_to_next_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_IN_LAB to RELEASING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9. WAITING_IN_SECOND_ROOM to 10. NAVIGATING_TO_NEXT_ROOM");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_IN_LAB to RELEASING_RACK: " << release_and_home_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9. WAITING_IN_SECOND_ROOM to 10. NAVIGATING_TO_NEXT_ROOM: " << go_from_second_to_next_srv_response.message.c_str());
         }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
       }
     }
 
-    // WAITING_IN_LAB --> HOMING_RACK
-    // else if (message == "BRING_RACK_HOME")
-    else if (message_2 == 1.0)
+    // 9. WAITING_IN_SECOND_ROOM --> 12. HOMING_RACK
+    else if (message == "BRING RACK HOME")
     {
-      RCOMPONENT_WARN_STREAM("Received BRING_RACK_HOME from HMI");
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1187,11 +1418,124 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       {
         if (release_and_home_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from WAITING_IN_LAB to HOMING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9. WAITING_IN_SECOND_ROOM to 12. HOMING_RACK");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from WAITING_IN_LAB to HOMING_RACK: " << release_and_home_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9. WAITING_IN_SECOND_ROOM to 12. HOMING_RACK: " << release_and_home_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+      }
+    }
+
+    // 9. WAITING_IN_SECOND_ROOM --> 14. RELEASING_RACK
+    else if (message == "RELEASE AND HOME")
+    {
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
+      std_srvs::SetBoolRequest release_and_home_srv_request;
+      std_srvs::SetBoolResponse release_and_home_srv_response;
+
+      release_and_home_srv_request.data = true;
+
+      if (releaseRackServiceCb(release_and_home_srv_request, release_and_home_srv_response))
+      {
+        if (release_and_home_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9. WAITING_IN_SECOND_ROOM to 14. RELEASING_RACK");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9. WAITING_IN_SECOND_ROOM to 14. RELEASING_RACK: " << release_and_home_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+      }
+    }
+  }
+
+  // 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM, 12. HOMING_RACK, or 14. RELEASING_RACK
+  if (current_state_ == "11. WAITING_IN_NEXT_ROOM")
+  {
+    std::string message = msg->data.data.taskType;
+
+    // 11. WAITING_IN_NEXT_ROOM --> 10. NAVIGATING_TO_NEXT_ROOM
+    // TODO: Add all possible rooms?
+    if (message == "GO TO ROOM X")
+    {
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
+      std_srvs::TriggerRequest go_to_next_room_srv_request;
+      std_srvs::TriggerResponse go_to_next_room_srv_response;
+
+      if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
+      {
+        if (go_to_next_room_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11. WAITING_IN_NEXT_ROOM to 10. NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11. WAITING_IN_NEXT_ROOM to 10. NAVIGATING_TO_NEXT_ROOM: " << go_to_next_room_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_to_next_room");
+      }
+    }
+
+    // 11. WAITING_IN_NEXT_ROOM --> 12. HOMING_RACK
+    else if (message == "BRING RACK HOME")
+    {
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
+      std_srvs::SetBoolRequest release_and_home_srv_request;
+      std_srvs::SetBoolResponse release_and_home_srv_response;
+
+      release_and_home_srv_request.data = false;
+
+      if (releaseRackServiceCb(release_and_home_srv_request, release_and_home_srv_response))
+      {
+        if (release_and_home_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11. WAITING_IN_NEXT_ROOM to 12. HOMING_RACK");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11. WAITING_IN_NEXT_ROOM to 12. HOMING_RACK: " << release_and_home_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+      }
+    }
+
+    // 11. WAITING_IN_NEXT_ROOM --> 14. RELEASING_RACK
+    else if (message == "RELEASE AND HOME")
+    {
+      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+
+      std_srvs::SetBoolRequest release_and_home_srv_request;
+      std_srvs::SetBoolResponse release_and_home_srv_response;
+
+      release_and_home_srv_request.data = true;
+
+      if (releaseRackServiceCb(release_and_home_srv_request, release_and_home_srv_response))
+      {
+        if (release_and_home_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11. WAITING_IN_NEXT_ROOM to 14. RELEASING_RACK");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11. WAITING_IN_NEXT_ROOM to 14. RELEASING_RACK: " << release_and_home_srv_response.message.c_str());
         }
       }
       else
@@ -1223,18 +1567,18 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
     std_srvs::TriggerRequest move_base_srv_request;
     std_srvs::TriggerResponse move_base_srv_response;
 
-    // NAVIGATING_TO_RACK --> PICKING_RACK
-    if (current_state_ == "NAVIGATING_TO_RACK")
+    // 5. NAVIGATING_TO_RACK --> 6. PICKING_RACK
+    if (current_state_ == "5. NAVIGATING_TO_RACK")
     {
       if (arrivedAtRackServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_RACK to PICKING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 5. NAVIGATING_TO_RACK to 6. PICKING_RACK");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_RACK to PICKING_RACK: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 5. NAVIGATING_TO_RACK to 6. PICKING_RACK: " << move_base_srv_response.message.c_str());
         }
       }
       else
@@ -1243,58 +1587,78 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
     }
 
-    // NAVIGATING_TO_POI --> WAITING_IN_POI
-    if (current_state_ == "NAVIGATING_TO_POI")
+    // 19. NAVIGATING_TO_RACK --> 20. PICKING_RACK
+    if (current_state_ == "19. NAVIGATING_TO_RACK")
     {
-      if (arrivedAtPoiServiceCb(move_base_srv_request, move_base_srv_response))
+      if (arrivedAtRackServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_POI to WAITING_IN_POI");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 19. NAVIGATING_TO_RACK to 20. PICKING_RACK");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_POI to WAITING_IN_POI: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 19. NAVIGATING_TO_RACK to 20. PICKING_RACK: " << move_base_srv_response.message.c_str());
         }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_poi");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_rack");
       }
     }
 
-    // NAVIGATING_TO_LAB --> WAITING_IN_LAB
-    if (current_state_ == "NAVIGATING_TO_LAB")
+    // 8. NAVIGATING_TO_SECOND_ROOM --> 9. WAITING_IN_SECOND_ROOM
+    if (current_state_ == "8. NAVIGATING_TO_SECOND_ROOM")
     {
-      if (arrivedAtLabServiceCb(move_base_srv_request, move_base_srv_response))
+      if (arrivedAtSecondRoomServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_LAB to WAITING_IN_LAB");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 8. NAVIGATING_TO_SECOND_ROOM to 9. WAITING_IN_SECOND_ROOM");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_LAB to WAITING_IN_LAB: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 8. NAVIGATING_TO_SECOND_ROOM to 9. WAITING_IN_SECOND_ROOM: " << move_base_srv_response.message.c_str());
         }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_lab");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_second_room");
       }
     }
 
-    // HOMING_RACK --> PLACING_RACK
-    if (current_state_ == "HOMING_RACK")
+    // 10. NAVIGATING_TO_NEXT_ROOM --> 11. WAITING_IN_NEXT_ROOM
+    if (current_state_ == "10. NAVIGATING_TO_NEXT_ROOM")
+    {
+      if (arrivedAtNextRoomServiceCb(move_base_srv_request, move_base_srv_response))
+      {
+        if (move_base_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 10. NAVIGATING_TO_NEXT_ROOM to 11. WAITING_IN_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 10. NAVIGATING_TO_NEXT_ROOM to 11. WAITING_IN_NEXT_ROOM: " << move_base_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_next_room");
+      }
+    }
+
+    // 12. HOMING_RACK --> 13. PLACING_RACK
+    if (current_state_ == "12. HOMING_RACK")
     {
       if (rackHomedServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from HOMING_RACK to PLACING_RACK");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 12. HOMING_RACK to 13. PLACING_RACK");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from HOMING_RACK to PLACING_RACK: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 12. HOMING_RACK to 13. PLACING_RACK: " << move_base_srv_response.message.c_str());
         }
       }
       else
@@ -1303,18 +1667,38 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
     }
 
-    // NAVIGATING_TO_HOME --> WAITING_FOR_MISSION
-    if (current_state_ == "NAVIGATING_TO_HOME")
+    // 15. NAVIGATING_TO_HOME --> 1. WAITING_FOR_MISSION
+    if (current_state_ == "15. NAVIGATING_TO_HOME")
     {
       if (arrivedAtHomeServiceCb(move_base_srv_request, move_base_srv_response))
       {
         if (move_base_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from NAVIGATING_TO_HOME to WAITING_FOR_MISSION");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 15. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from NAVIGATING_TO_HOME to WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 15. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_home");
+      }
+    }
+
+    // 23. NAVIGATING_TO_HOME --> 1. WAITING_FOR_MISSION
+    if (current_state_ == "23. NAVIGATING_TO_HOME")
+    {
+      if (arrivedAtHomeServiceCb(move_base_srv_request, move_base_srv_response))
+      {
+        if (move_base_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 23. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 23. NAVIGATING_TO_HOME to 1. WAITING_FOR_MISSION: " << move_base_srv_response.message.c_str());
         }
       }
       else
@@ -1332,18 +1716,18 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
     std_srvs::TriggerRequest command_sequencer_srv_request;
     std_srvs::TriggerResponse command_sequencer_srv_response;
 
-    // PICKING_RACK --> NAVIGATING_TO_POI
-    if (current_state_ == "PICKING_RACK")
+    // 6. PICKING_RACK --> 7. WAITING_IN_FIRST_ROOM
+    if (current_state_ == "6. PICKING_RACK")
     {
       if (rackPickedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
       {
         if (command_sequencer_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from PICKING_RACK to NAVIGATING_TO_POI");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 6. PICKING_RACK to 7. WAITING_IN_FIRST_ROOM");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from PICKING_RACK to NAVIGATING_TO_POI: " << command_sequencer_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 6. PICKING_RACK to 7. WAITING_IN_FIRST_ROOM: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else
@@ -1352,18 +1736,38 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
     }
 
-    // PLACING_RACK --> NAVIGATING_TO_HOME
-    if (current_state_ == "PLACING_RACK")
+    // 20. PICKING_RACK --> 21. CHARGING_RACK
+    else if (current_state_ == "20. PICKING_RACK")
+    {
+      if (rackPickedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
+      {
+        if (command_sequencer_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 20. PICKING_RACK to 21. CHARGING_RACK");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 20. PICKING_RACK to 21. CHARGING_RACK: " << command_sequencer_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_picked");
+      }
+    }
+
+    // 13. PLACING_RACK --> 15. NAVIGATING_TO_HOME
+    else if (current_state_ == "13. PLACING_RACK")
     {
       if (rackPlacedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
       {
         if (command_sequencer_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from PLACING_RACK to NAVIGATING_TO_HOME");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 13. PLACING_RACK to 15. NAVIGATING_TO_HOME");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from PLACING_RACK to NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 13. PLACING_RACK to 15. NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else
@@ -1372,18 +1776,38 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
     }
 
-    // RELEASING_RACK --> NAVIGATING_TO_HOME
-    if (current_state_ == "RELEASING_RACK")
+    // 14. RELEASING_RACK --> 15. NAVIGATING_TO_HOME
+    else if (current_state_ == "14. RELEASING_RACK")
     {
       if (rackReleasedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
       {
         if (command_sequencer_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from RELEASING_RACK to NAVIGATING_TO_HOME");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 14. RELEASING_RACK to 15. NAVIGATING_TO_HOME");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from RELEASING_RACK to NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 14. RELEASING_RACK to 15. NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_released");
+      }
+    }
+
+    // 22. RELEASING_RACK --> 23. NAVIGATING_TO_HOME
+    else if (current_state_ == "22. RELEASING_RACK")
+    {
+      if (rackReleasedServiceCb(command_sequencer_srv_request, command_sequencer_srv_response))
+      {
+        if (command_sequencer_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 22. RELEASING_RACK to 23. NAVIGATING_TO_HOME");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 22. RELEASING_RACK to 23. NAVIGATING_TO_HOME: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else
