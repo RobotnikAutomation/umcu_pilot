@@ -60,6 +60,7 @@ protected:
   //! Publishers
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;
+  odin_msgs::RobotStatus robot_status_;
   ros::Publisher robot_result_pub_;
   string robot_result_pub_name_;
   ros::Publisher state_machine_state_pub_;
@@ -195,37 +196,113 @@ protected:
   //! 1. WAITING_FOR_MISSION
   void waitingForMissionState();
   bool mission_received_;
-  float poi_x_{0.0};
-  float poi_y_{0.0};
-  float poi_rot_z_{0.0};
-  float poi_rot_w_{1.0};
-  float home_x_{0.0};
-  float home_y_{0.0};
+
+  double home_robot_x_{0.0};
+  double home_robot_y_{0.0};
+  double home_robot_z_{0.0};
+  double home_robot_rot_x_{0.0};
+  double home_robot_rot_y_{0.0};
+  double home_robot_rot_z_{0.0};
+  double home_robot_rot_w_{0.0};
+
+  double home_pre_pick_x_{0.0};
+  double home_pre_pick_y_{0.0};
+  double home_pre_pick_z_{0.0};
+  double home_pre_pick_rot_x_{0.0};
+  double home_pre_pick_rot_y_{0.0};
+  double home_pre_pick_rot_z_{0.0};
+  double home_pre_pick_rot_w_{0.0};
+
+  double home_place_x_{0.0};
+  double home_place_y_{0.0};
+  double home_place_z_{0.0};
+  double home_place_rot_x_{0.0};
+  double home_place_rot_y_{0.0};
+  double home_place_rot_z_{0.0};
+  double home_place_rot_w_{0.0};
+
+  double poi_x_{0.0};     // Old
+  double poi_y_{0.0};     // Old
+  double poi_rot_z_{0.0}; // Old
+  double poi_rot_w_{1.0}; // Old
+  double home_x_{0.0};    // Old
+  double home_y_{0.0};    // Old
 
   //! 2. CHECKING_ELEVATOR, or 16. CHECKING_ELEVATOR
   void checkingElevatorState();
 
   //! 3. GETTING_RACK_POSITION, or 17. GETTING_RACK_POSITION
   void gettingRackPositionState();
-  double rack_x_{0.0};
-  double rack_y_{0.0};
-  double rack_z_{0.0};
-  double x1_{1.59983614424};
-  double y1_{1.7909510717};
-  double z1_{0.0};
-  double x2_{12.614839128};
-  double y2_{2.96726033821};
-  double z2_{0.0};
-  double x_goal_{0.0};
-  double y_goal_{0.0};
-  double z_goal_{0.0};
-  double z_orient_goal{0.0};
-  double w_orient_goal{0.0};
+
+  double room_1_pre_pick_x_{0.0};
+  double room_1_pre_pick_y_{0.0};
+  double room_1_pre_pick_z_{0.0};
+  double room_1_pre_pick_rot_x_{0.0};
+  double room_1_pre_pick_rot_y_{0.0};
+  double room_1_pre_pick_rot_z_{0.0};
+  double room_1_pre_pick_rot_w_{0.0};
+
+  double room_1_place_x_{0.0};
+  double room_1_place_y_{0.0};
+  double room_1_place_z_{0.0};
+  double room_1_place_rot_x_{0.0};
+  double room_1_place_rot_y_{0.0};
+  double room_1_place_rot_z_{0.0};
+  double room_1_place_rot_w_{0.0};
+
+  double room_2_pre_pick_x_{0.0};
+  double room_2_pre_pick_y_{0.0};
+  double room_2_pre_pick_z_{0.0};
+  double room_2_pre_pick_rot_x_{0.0};
+  double room_2_pre_pick_rot_y_{0.0};
+  double room_2_pre_pick_rot_z_{0.0};
+  double room_2_pre_pick_rot_w_{0.0};
+
+  double room_2_place_x_{0.0};
+  double room_2_place_y_{0.0};
+  double room_2_place_z_{0.0};
+  double room_2_place_rot_x_{0.0};
+  double room_2_place_rot_y_{0.0};
+  double room_2_place_rot_z_{0.0};
+  double room_2_place_rot_w_{0.0};
+
+  double room_3_place_x_{0.0};
+  double room_3_place_y_{0.0};
+  double room_3_place_z_{0.0};
+  double room_3_place_rot_x_{0.0};
+  double room_3_place_rot_y_{0.0};
+  double room_3_place_rot_z_{0.0};
+  double room_3_place_rot_w_{0.0};
+
+  double rack_x_{0.0};       // Old
+  double rack_y_{0.0};       // Old
+  double rack_z_{0.0};       // Old
+  double x1_{1.59983614424}; // Old
+  double y1_{1.7909510717};  // Old
+  double z1_{0.0};           // Old
+  double x2_{12.614839128};  // Old
+  double y2_{2.96726033821}; // Old
+  double z2_{0.0};           // Old
+  double x_goal_{0.0};       // Old
+  double y_goal_{0.0};       // Old
+  double z_goal_{0.0};       // Old
+  double z_orient_goal{0.0}; // Old
+  double w_orient_goal{0.0}; // Old
 
   // 4. CHECKING_RACK_POSITION
   void checkingRackPositionState();
-  double room1_x_{0.0};
-  double room1_y_{0.0};
+
+  double home_docking_x_{0.0};
+  double home_docking_y_{0.0};
+
+  double room_1_docking_x_{0.0};
+  double room_1_docking_y_{0.0};
+
+  double room_2_docking_x_{0.0};
+  double room_2_docking_y_{0.0};
+
+  double room1_x_{0.0}; // Old
+  double room1_y_{0.0}; // Old
 
   //! 5. NAVIGATING_TO_RACK, or 19. NAVIGATING_TO_RACK
   void navigatingToRackState();
@@ -238,14 +315,14 @@ protected:
 
   //! 7. WAITING_IN_FIRST_ROOM
   void waitingInFirstRoomState();
-  // TODO: change variable names
-  float lab_pos_x_{0.0};
-  float lab_pos_y_{0.0};
-  float lab_pos_z_{0.0};
-  float lab_ori_x_{0.0};
-  float lab_ori_y_{0.0};
-  float lab_ori_z_{0.0};
-  float lab_ori_w_{0.0};
+  
+  double lab_pos_x_{0.0}; // Old
+  double lab_pos_y_{0.0}; // Old
+  double lab_pos_z_{0.0}; // Old
+  double lab_ori_x_{0.0}; // Old
+  double lab_ori_y_{0.0}; // Old
+  double lab_ori_z_{0.0}; // Old
+  double lab_ori_w_{0.0}; // Old
 
   //! 8. NAVIGATING_TO_SECOND_ROOM
   void navigatingToSecondRoomState();

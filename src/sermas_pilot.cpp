@@ -107,6 +107,13 @@ void SermasPilot::rosPublish()
   if (getState() == robotnik_msgs::State::READY_STATE)
   {
     // Publishers
+    // robot_status_.data.battery = battery_status_;
+    robot_status_.data.status = current_state_;
+    // robot_status.data.pose = pose_;
+    robot_status_pub_.publish(robot_status_);
+
+    current_state_data_.data = current_state_;
+    state_machine_state_pub_.publish(current_state_data_);
   }
 }
 
@@ -120,15 +127,13 @@ void SermasPilot::initState()
   navigation_command_sent_ = false;
   sequence_sent_ = false;
 
-  odin_msgs::RobotStatus robot_status;
-  robot_status.data.battery = battery_status_;
-  robot_status.data.status = current_state_;
-  robot_status.data.pose = pose_;
+  // robot_status_.data.battery = battery_status_;
+  // robot_status_.data.status = current_state_;
+  // robot_status_.data.pose = pose_;
+  // robot_status_pub_.publish(robot_status_);
 
-  robot_status_pub_.publish(robot_status);
-
-  current_state_data_.data = current_state_;
-  state_machine_state_pub_.publish(current_state_data_);
+  // current_state_data_.data = current_state_;
+  // state_machine_state_pub_.publish(current_state_data_);
 
   switchToState(robotnik_msgs::State::STANDBY_STATE);
 }
@@ -256,16 +261,6 @@ void SermasPilot::changeState(const string &next_state, const string &additional
 
   navigation_command_sent_ = false;
   sequence_sent_ = false;
-
-  odin_msgs::RobotStatus robot_status;
-  robot_status.data.battery = battery_status_;
-  robot_status.data.status = current_state_;
-  robot_status.data.pose = pose_;
-
-  robot_status_pub_.publish(robot_status);
-
-  current_state_data_.data = current_state_;
-  state_machine_state_pub_.publish(current_state_data_);
 }
 /* State Machine !*/
 
@@ -1549,12 +1544,14 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 
 void SermasPilot::batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg)
 {
+  robot_status_.data.battery = battery_status_;
   battery_status_ = msg->level;
   tickTopicsHealth(battery_sub_name_);
 }
 
 void SermasPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
+  robot_status_.data.pose = pose_;
   pose_ = *msg;
   tickTopicsHealth(pose_sub_name_);
 }
