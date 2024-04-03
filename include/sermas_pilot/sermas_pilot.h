@@ -6,6 +6,7 @@
 // General includes
 #include <actionlib/client/simple_action_client.h>
 #include <math.h>
+#include <XmlRpcValue.h>
 
 // Msgs
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -189,6 +190,8 @@ protected:
   float battery_status_{0.0};
   geometry_msgs::PoseWithCovarianceStamped pose_;
 
+  XmlRpc::XmlRpcValue locations_;
+
   //! State Machine
   void runRobotStateMachine();
   void changeState(const string &next_state, const string &additional_information);
@@ -221,12 +224,12 @@ protected:
   double home_place_rot_z_{0.0};
   double home_place_rot_w_{0.0};
 
-  double poi_x_{0.0};     // Old
-  double poi_y_{0.0};     // Old
-  double poi_rot_z_{0.0}; // Old
-  double poi_rot_w_{1.0}; // Old
-  double home_x_{0.0};    // Old
-  double home_y_{0.0};    // Old
+  // double poi_x_{0.0};     // Old
+  // double poi_y_{0.0};     // Old
+  // double poi_rot_z_{0.0}; // Old
+  // double poi_rot_w_{1.0}; // Old
+  // double home_x_{0.0};    // Old
+  // double home_y_{0.0};    // Old
 
   //! 2_CHECKING_ELEVATOR, or 16_CHECKING_ELEVATOR
   void checkingElevatorState();
@@ -274,9 +277,9 @@ protected:
   double room_3_place_rot_z_{0.0};
   double room_3_place_rot_w_{0.0};
 
-  double rack_x_{0.0};       // Old
-  double rack_y_{0.0};       // Old
-  double rack_z_{0.0};       // Old
+  double rack_x_{0.0};       // Old, still needed
+  double rack_y_{0.0};       // Old, still needed
+  double rack_z_{0.0};       // Old, still needed
   double x1_{1.59983614424}; // Old
   double y1_{1.7909510717};  // Old
   double z1_{0.0};           // Old
@@ -315,7 +318,7 @@ protected:
 
   //! 7_WAITING_IN_FIRST_ROOM
   void waitingInFirstRoomState();
-  
+
   double lab_pos_x_{0.0}; // Old
   double lab_pos_y_{0.0}; // Old
   double lab_pos_z_{0.0}; // Old
@@ -355,6 +358,8 @@ protected:
 
   //! 21_CHARGING_RACK
   void chargingRackState();
+
+  void loadLocationParameters(XmlRpc::XmlRpcValue &locations);
   /* SermasPilot Stuff !*/
 };
 
