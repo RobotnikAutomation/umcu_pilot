@@ -310,21 +310,19 @@ void SermasPilot::gettingRackPositionState()
 }
 
 //! 4_CHECKING_RACK_POSITION
-// The RB-1 checks if the rack is in the correct room (ROOM 1)
-// TODO: Check also the other room?
+// The RB-1 checks if the rack is in the correct docking station (in ROOM 1)
 void SermasPilot::checkingRackPositionState()
 {
   RCOMPONENT_INFO_STREAM("4_CHECKING_RACK_POSITION");
 
-  double distance = std::sqrt(std::pow(rack_x_ - room1_x_, 2) + std::pow(rack_y_ - room1_y_, 2));
-
+  double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
   if (distance < 1.0)
   {
-    RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of the docking station in ROOM 1.");
   }
   else
   {
-    RCOMPONENT_INFO_STREAM("The rack is not closer than 1 meter to the _a priori known position of ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is not closer than 1 meter to the _a priori known position of the docking station in ROOM 1.");
   }
 
   std_srvs::SetBool::Request correct_position_srv_request;
@@ -335,11 +333,11 @@ void SermasPilot::checkingRackPositionState()
   {
     if (correct_position_srv_response.success)
     {
-      RCOMPONENT_INFO_STREAM("Successfully switched from 4_CHECKING_RACK_POSITION");
+      RCOMPONENT_INFO_STREAM("Successfully switched from 4_CHECKING_RACK_POSITION to 5_NAVIGATING_TO_RACK");
     }
     else
     {
-      RCOMPONENT_WARN_STREAM("Failed to switch from 4_CHECKING_RACK_POSITION: " << correct_position_srv_response.message.c_str());
+      RCOMPONENT_WARN_STREAM("Failed to switch from 4_CHECKING_RACK_POSITION to 5_NAVIGATING_TO_RACK: " << correct_position_srv_response.message.c_str());
     }
   }
   else
@@ -349,35 +347,54 @@ void SermasPilot::checkingRackPositionState()
 }
 
 //! 5_NAVIGATING_TO_RACK, or 19_NAVIGATING_TO_RACK
-// The RB-1 navigates to the _a priori_ known position of the rack
+// The RB-1 navigates to the _a priori_ known pre-pick position of the rack
 void SermasPilot::navigatingToRackState()
 {
+  // If we are in the 5_NAVIGATING_TO_RACK state, we are navigating to the rack in the HOME ROOM
   if (current_state_ == "5_NAVIGATING_TO_RACK")
   {
     RCOMPONENT_INFO_STREAM("5_NAVIGATING_TO_RACK");
+    if (!navigation_command_sent_)
+    {
+      RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
+      RCOMPONENT_INFO_STREAM("x: " << room_1_pre_pick_x_ << ", y: " << room_1_pre_pick_y_);
+
+      move_base_goal_.target_pose.header.stamp = ros::Time::now();
+      move_base_goal_.target_pose.header.frame_id = "robot_map";
+      move_base_goal_.target_pose.pose.position.x = room_1_pre_pick_x_;
+      move_base_goal_.target_pose.pose.position.y = room_1_pre_pick_y_;
+      move_base_goal_.target_pose.pose.position.z = room_1_pre_pick_z_;
+      move_base_goal_.target_pose.pose.orientation.x = room_1_pre_pick_rot_x_;
+      move_base_goal_.target_pose.pose.orientation.y = room_1_pre_pick_rot_y_;
+      move_base_goal_.target_pose.pose.orientation.z = room_1_pre_pick_rot_z_;
+      move_base_goal_.target_pose.pose.orientation.w = room_1_pre_pick_rot_w_;
+      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+
+      navigation_command_sent_ = true;
+    }
   }
+  // If we are in the 19_NAVIGATING_TO_RACK state, we are navigating to the rack in the calcultad goal
   else if (current_state_ == "19_NAVIGATING_TO_RACK")
   {
     RCOMPONENT_INFO_STREAM("19_NAVIGATING_TO_RACK");
-  }
+    if (!navigation_command_sent_)
+    {
+      RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
+      RCOMPONENT_INFO_STREAM("x: " << room_1_pre_pick_x_ << ", y: " << room_1_pre_pick_y_);
 
-  if (!navigation_command_sent_)
-  {
-    RCOMPONENT_INFO_STREAM("Sending command to navigate to the rack...");
+      move_base_goal_.target_pose.header.stamp = ros::Time::now();
+      move_base_goal_.target_pose.header.frame_id = "robot_map";
+      move_base_goal_.target_pose.pose.position.x = x_goal_;
+      move_base_goal_.target_pose.pose.position.y = y_goal_;
+      move_base_goal_.target_pose.pose.position.z = z_goal_;
+      move_base_goal_.target_pose.pose.orientation.x = x_orient_goal_;
+      move_base_goal_.target_pose.pose.orientation.y = y_orient_goal_;
+      move_base_goal_.target_pose.pose.orientation.z = z_orient_goal_;
+      move_base_goal_.target_pose.pose.orientation.w = w_orient_goal_;
+      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
-    // TODO during pilot: Set the correct frame and coordinates
-    move_base_goal_.target_pose.header.stamp = ros::Time::now();
-    move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = x_goal_;
-    move_base_goal_.target_pose.pose.position.y = y_goal_;
-    move_base_goal_.target_pose.pose.position.z = z_goal_;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = z_orient_goal;
-    move_base_goal_.target_pose.pose.orientation.w = w_orient_goal;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
-
-    navigation_command_sent_ = true;
+      navigation_command_sent_ = true;
+    }
   }
 }
 
@@ -417,22 +434,21 @@ void SermasPilot::waitingInFirstRoomState()
 // The RB-1 navigates to the second room
 void SermasPilot::navigatingToSecondRoomState()
 {
-  // TODO: Change variable names, and set correct coordinates
   RCOMPONENT_INFO_STREAM("8_NAVIGATING_TO_SECOND_ROOM");
   if (!navigation_command_sent_)
   {
     RCOMPONENT_INFO_STREAM("Sending command to navigate to the second room...");
-    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
+    RCOMPONENT_INFO_STREAM("x: " << room_2_place_x_ << ", y: " << room_2_place_y_);
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = lab_pos_x_;
-    move_base_goal_.target_pose.pose.position.y = lab_pos_y_;
-    move_base_goal_.target_pose.pose.position.z = lab_pos_z_;
-    move_base_goal_.target_pose.pose.orientation.x = lab_ori_x_;
-    move_base_goal_.target_pose.pose.orientation.y = lab_ori_y_;
-    move_base_goal_.target_pose.pose.orientation.z = lab_ori_z_;
-    move_base_goal_.target_pose.pose.orientation.w = lab_ori_w_;
+    move_base_goal_.target_pose.pose.position.x = room_2_place_x_;
+    move_base_goal_.target_pose.pose.position.y = room_2_place_y_;
+    move_base_goal_.target_pose.pose.position.z = room_2_place_z_;
+    move_base_goal_.target_pose.pose.orientation.x = room_2_place_rot_x_;
+    move_base_goal_.target_pose.pose.orientation.y = room_2_place_rot_y_;
+    move_base_goal_.target_pose.pose.orientation.z = room_2_place_rot_z_;
+    move_base_goal_.target_pose.pose.orientation.w = room_2_place_rot_w_;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -453,19 +469,18 @@ void SermasPilot::navigatingToNextRoomState()
   RCOMPONENT_INFO_STREAM("10_NAVIGATING_TO_NEXT_ROOM");
   if (!navigation_command_sent_)
   {
-    // TODO: Change variable names, and set correct coordinates
     RCOMPONENT_INFO_STREAM("Sending command to navigate to the next room...");
-    RCOMPONENT_INFO_STREAM("x: " << lab_pos_x_ << ", y: " << lab_pos_y_);
+    RCOMPONENT_INFO_STREAM("x: " << next_room_x_ << ", y: " << next_room_y_);
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = lab_pos_x_;
-    move_base_goal_.target_pose.pose.position.y = lab_pos_y_;
-    move_base_goal_.target_pose.pose.position.z = lab_pos_z_;
-    move_base_goal_.target_pose.pose.orientation.x = lab_ori_x_;
-    move_base_goal_.target_pose.pose.orientation.y = lab_ori_y_;
-    move_base_goal_.target_pose.pose.orientation.z = lab_ori_z_;
-    move_base_goal_.target_pose.pose.orientation.w = lab_ori_w_;
+    move_base_goal_.target_pose.pose.position.x = next_room_x_;
+    move_base_goal_.target_pose.pose.position.y = next_room_y_;
+    move_base_goal_.target_pose.pose.position.z = next_room_z_;
+    move_base_goal_.target_pose.pose.orientation.x = next_room_rot_x_;
+    move_base_goal_.target_pose.pose.orientation.y = next_room_rot_y_;
+    move_base_goal_.target_pose.pose.orientation.z = next_room_rot_z_;
+    move_base_goal_.target_pose.pose.orientation.w = next_room_rot_w_;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -481,7 +496,6 @@ void SermasPilot::waitingInNextRoomState()
 
 //! 12_HOMING_RACK
 // The RB-1 brings back the rack to the HOME ROOM
-// TODO during pilot: Set correct coordinates
 void SermasPilot::homingRackState()
 {
   RCOMPONENT_INFO_STREAM("12_HOMING_RACK");
@@ -491,13 +505,13 @@ void SermasPilot::homingRackState()
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = x_goal_;
-    move_base_goal_.target_pose.pose.position.y = y_goal_;
-    move_base_goal_.target_pose.pose.position.z = z_goal_;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_goal_.target_pose.pose.position.x = home_place_x_;
+    move_base_goal_.target_pose.pose.position.y = home_place_y_;
+    move_base_goal_.target_pose.pose.position.z = home_place_z_;
+    move_base_goal_.target_pose.pose.orientation.x = home_place_rot_x_;
+    move_base_goal_.target_pose.pose.orientation.y = home_place_rot_y_;
+    move_base_goal_.target_pose.pose.orientation.z = home_place_rot_z_;
+    move_base_goal_.target_pose.pose.orientation.w = home_place_rot_w_;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -566,13 +580,13 @@ void SermasPilot::navigatingToHomeState()
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = 0.953378100745;
-    move_base_goal_.target_pose.pose.position.y = 0.526700783056;
-    move_base_goal_.target_pose.pose.position.z = 0.0;
-    move_base_goal_.target_pose.pose.orientation.x = 0.0;
-    move_base_goal_.target_pose.pose.orientation.y = 0.0;
-    move_base_goal_.target_pose.pose.orientation.z = -0.707106781;
-    move_base_goal_.target_pose.pose.orientation.w = 0.707106781;
+    move_base_goal_.target_pose.pose.position.x = home_robot_x_;
+    move_base_goal_.target_pose.pose.position.y = home_robot_y_;
+    move_base_goal_.target_pose.pose.position.z = home_robot_z_;
+    move_base_goal_.target_pose.pose.orientation.x = home_robot_rot_x_;
+    move_base_goal_.target_pose.pose.orientation.y = home_robot_rot_y_;
+    move_base_goal_.target_pose.pose.orientation.z = home_robot_rot_z_;
+    move_base_goal_.target_pose.pose.orientation.w = home_robot_rot_w_;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -585,28 +599,39 @@ void SermasPilot::calculatingGoalState()
 {
   RCOMPONENT_INFO_STREAM("18_CALCULATING_GOAL");
 
-  // TODO during pilot: Get correct coordinates from docking station location
-  double distance1;
-  distance1 = sqrt(pow(rack_x_ - x1_, 2) + pow(rack_y_ - y1_, 2) + pow(rack_z_ - z1_, 2));
+  double distance_1 = sqrt(pow(rack_x_ - home_docking_x_, 2) + pow(rack_y_ - home_docking_y_, 2));
+  double distance_2 = sqrt(pow(rack_x_ - room_1_docking_x_, 2) + pow(rack_y_ - room_1_docking_x_, 2));
+  double distance_3 = sqrt(pow(rack_x_ - room_2_docking_x_, 2) + pow(rack_y_ - room_2_docking_y_, 2));
 
-  double distance2;
-  distance2 = sqrt(pow(rack_x_ - x2_, 2) + pow(rack_y_ - y2_, 2) + pow(rack_z_ - z2_, 2));
+  double min_distance = distance_1;
+  x_goal_ = home_pre_pick_x_;
+  y_goal_ = home_pre_pick_y_;
+  z_goal_ = home_pre_pick_z_;
+  x_orient_goal_ = home_pre_pick_rot_x_;
+  y_orient_goal_ = home_pre_pick_rot_y_;
+  z_orient_goal_ = home_pre_pick_rot_z_;
+  w_orient_goal_ = home_pre_pick_rot_w_;
 
-  if (distance1 < distance2)
+  if (distance_2 < min_distance)
   {
-    x_goal_ = x1_;
-    y_goal_ = y1_;
-    z_goal_ = z1_;
-    z_orient_goal = 0.998652902351;
-    w_orient_goal = 0.0518881549817;
+    min_distance = distance_2;
+    x_goal_ = home_pre_pick_x_;
+    y_goal_ = home_pre_pick_y_;
+    z_goal_ = home_pre_pick_z_;
+    x_orient_goal_ = home_pre_pick_rot_x_;
+    y_orient_goal_ = home_pre_pick_rot_y_;
+    z_orient_goal_ = home_pre_pick_rot_z_;
+    w_orient_goal_ = home_pre_pick_rot_w_;
   }
-  else
+  if (distance_3 < min_distance)
   {
-    x_goal_ = x2_;
-    y_goal_ = y2_;
-    z_goal_ = z2_;
-    z_orient_goal = 0.117846;
-    w_orient_goal = 0.993032;
+    x_goal_ = room_2_pre_pick_x_;
+    y_goal_ = room_2_pre_pick_y_;
+    z_goal_ = room_2_pre_pick_z_;
+    x_orient_goal_ = room_2_pre_pick_rot_x_;
+    y_orient_goal_ = room_2_pre_pick_rot_y_;
+    z_orient_goal_ = room_2_pre_pick_rot_z_;
+    w_orient_goal_ = room_2_pre_pick_rot_w_;
   }
 
   std_srvs::TriggerRequest goal_calculated_srv_request;
@@ -743,7 +768,7 @@ bool SermasPilot::correctPositionServiceCb(std_srvs::SetBool::Request &request, 
     else
     {
       changeState("3_GETTING_RACK_POSITION", "The rack is NOT in the correct room!");
-      response.success = true;
+      response.success = false;
       response.message = "The rack is NOT in the correct room! Switching from 4_CHECKING_RACK_POSITION to 3_GETTING_RACK_POSITION.";
       return true;
     }
@@ -1102,7 +1127,6 @@ bool SermasPilot::rackChargedServiceCb(std_srvs::Trigger::Request &request, std_
 /* Callbacks */
 //! Subscription Callbacks
 // 1_WAITING_FOR_MISSION --> 16_CHECKING_ELEVATOR
-// TODO: Correct function
 void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 {
   if (current_state_ == "1_WAITING_FOR_MISSION")
@@ -1335,24 +1359,24 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-    // TODO: Add other rooms?
     if (message == "GO TO ROOM 2")
     {
-      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
-      {
-        lab_pos_x_ = msg->data.data.endLocation.position[0];
-        lab_pos_y_ = msg->data.data.endLocation.position[1];
-        lab_pos_z_ = 0.0;             // msg->data.endLocation.position[2];
-        lab_ori_x_ = 0.0;             // msg->data.endLocation.orientation[0];
-        lab_ori_y_ = 0.0;             // msg->data.endLocation.orientation[1];
-        lab_ori_z_ = -0.710204380492; // msg->data.endLocation.orientation[2];
-        lab_ori_w_ = 0.703995552493;  // msg->data.endLocation.orientation[3];
-      }
-      else
-      {
-        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
-        return;
-      }
+      // When waiting in the first room, we can only go to the second room, so we don't need the coordinates
+      // if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // {
+      //   next_room_x_ = msg->data.data.endLocation.position[0];
+      //   next_room_y_ = msg->data.data.endLocation.position[1];
+      //   next_room_z_ = msg->data.data.endLocation.position[2];
+      //   next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+      //   next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+      //   next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+      //   next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      // }
+      // else
+      // {
+      //   RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+      //   return;
+      // }
 
       std_srvs::TriggerRequest go_from_first_to_second_room_srv_request;
       std_srvs::TriggerResponse go_from_first_to_second_room_srv_response;
@@ -1376,15 +1400,29 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   }
 
   // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM, 12_HOMING_RACK, or 14_RELEASING_RACK
-  if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
+  else if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
   {
     std::string message = msg->data.data.taskType;
+    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    // TODO: Add all possible rooms?
-    if (message == "GO TO ROOM X")
+    if (message == "GO TO ROOM 1" || message == "GO TO ROOM 3")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
+      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      {
+        next_room_x_ = msg->data.data.endLocation.position[0];
+        next_room_y_ = msg->data.data.endLocation.position[1];
+        next_room_z_ = msg->data.data.endLocation.position[2];
+        next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+        next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+        next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+        next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+        return;
+      }
 
       std_srvs::TriggerRequest go_from_second_to_next_srv_request;
       std_srvs::TriggerResponse go_from_second_to_next_srv_response;
@@ -1409,8 +1447,6 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 9_WAITING_IN_SECOND_ROOM --> 12_HOMING_RACK
     else if (message == "BRING RACK HOME")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
-
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1436,8 +1472,6 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 9_WAITING_IN_SECOND_ROOM --> 14_RELEASING_RACK
     else if (message == "RELEASE AND HOME")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
-
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1462,16 +1496,15 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   }
 
   // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM, 12_HOMING_RACK, or 14_RELEASING_RACK
-  if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
+  else if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
   {
     std::string message = msg->data.data.taskType;
+    RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
     // TODO: Add all possible rooms?
     if (message == "GO TO ROOM X")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
-
       std_srvs::TriggerRequest go_to_next_room_srv_request;
       std_srvs::TriggerResponse go_to_next_room_srv_response;
 
@@ -1495,8 +1528,6 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 11_WAITING_IN_NEXT_ROOM --> 12_HOMING_RACK
     else if (message == "BRING RACK HOME")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
-
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1522,8 +1553,6 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 11_WAITING_IN_NEXT_ROOM --> 14_RELEASING_RACK
     else if (message == "RELEASE AND HOME")
     {
-      RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
-
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 

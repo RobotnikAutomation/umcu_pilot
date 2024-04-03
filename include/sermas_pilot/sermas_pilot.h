@@ -224,13 +224,6 @@ protected:
   double home_place_rot_z_{0.0};
   double home_place_rot_w_{0.0};
 
-  // double poi_x_{0.0};     // Old
-  // double poi_y_{0.0};     // Old
-  // double poi_rot_z_{0.0}; // Old
-  // double poi_rot_w_{1.0}; // Old
-  // double home_x_{0.0};    // Old
-  // double home_y_{0.0};    // Old
-
   //! 2_CHECKING_ELEVATOR, or 16_CHECKING_ELEVATOR
   void checkingElevatorState();
 
@@ -277,20 +270,9 @@ protected:
   double room_3_place_rot_z_{0.0};
   double room_3_place_rot_w_{0.0};
 
-  double rack_x_{0.0};       // Old, still needed
-  double rack_y_{0.0};       // Old, still needed
-  double rack_z_{0.0};       // Old, still needed
-  double x1_{1.59983614424}; // Old
-  double y1_{1.7909510717};  // Old
-  double z1_{0.0};           // Old
-  double x2_{12.614839128};  // Old
-  double y2_{2.96726033821}; // Old
-  double z2_{0.0};           // Old
-  double x_goal_{0.0};       // Old
-  double y_goal_{0.0};       // Old
-  double z_goal_{0.0};       // Old
-  double z_orient_goal{0.0}; // Old
-  double w_orient_goal{0.0}; // Old
+  double rack_x_{0.0}; // Old, still needed
+  double rack_y_{0.0}; // Old, still needed
+  double rack_z_{0.0}; // Old, still needed
 
   // 4_CHECKING_RACK_POSITION
   void checkingRackPositionState();
@@ -304,9 +286,6 @@ protected:
   double room_2_docking_x_{0.0};
   double room_2_docking_y_{0.0};
 
-  double room1_x_{0.0}; // Old
-  double room1_y_{0.0}; // Old
-
   //! 5_NAVIGATING_TO_RACK, or 19_NAVIGATING_TO_RACK
   void navigatingToRackState();
   bool navigation_command_sent_;
@@ -319,14 +298,6 @@ protected:
   //! 7_WAITING_IN_FIRST_ROOM
   void waitingInFirstRoomState();
 
-  double lab_pos_x_{0.0}; // Old
-  double lab_pos_y_{0.0}; // Old
-  double lab_pos_z_{0.0}; // Old
-  double lab_ori_x_{0.0}; // Old
-  double lab_ori_y_{0.0}; // Old
-  double lab_ori_z_{0.0}; // Old
-  double lab_ori_w_{0.0}; // Old
-
   //! 8_NAVIGATING_TO_SECOND_ROOM
   void navigatingToSecondRoomState();
 
@@ -335,6 +306,14 @@ protected:
 
   //! 10_NAVIGATING_TO_NEXT_ROOM
   void navigatingToNextRoomState();
+
+  double next_room_x_{0.0};
+  double next_room_y_{0.0};
+  double next_room_z_{0.0};
+  double next_room_rot_x_{0.0};
+  double next_room_rot_y_{0.0};
+  double next_room_rot_z_{0.0};
+  double next_room_rot_w_{0.0};
 
   //! 11_WAITING_IN_NEXT_ROOM
   void waitingInNextRoomState();
@@ -355,6 +334,14 @@ protected:
 
   //! 18_CALCULATING_GOAL
   void calculatingGoalState();
+
+  double x_goal_{0.0};        // Old, still needed
+  double y_goal_{0.0};        // Old, still needed
+  double z_goal_{0.0};        // Old, still needed
+  double x_orient_goal_{0.0}; // Old, still needed
+  double y_orient_goal_{0.0}; // Old, still needed
+  double z_orient_goal_{0.0}; // Old, still needed
+  double w_orient_goal_{0.0}; // Old, still needed
 
   //! 21_CHARGING_RACK
   void chargingRackState();
