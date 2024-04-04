@@ -85,40 +85,28 @@ protected:
   //! Services Servers
   // _Pick Up_ Mission
   ros::ServiceServer pickup_mission_received_srv_;      // 1 --> 2
-  ros::ServiceServer elevator_down_srv_;                // 2 --> 3
-  ros::ServiceServer rack_position_received_srv_;       // 3 --> 4
+  ros::ServiceServer elevator_down_srv_;                // 2 --> 3, 16 --> 17
+  ros::ServiceServer rack_position_received_srv_;       // 3 --> 4, 17 --> 18
   ros::ServiceServer correct_position_srv_;             // 4 --> 3 (false), 5 (true)
-  ros::ServiceServer arrived_at_rack_srv_;              // 5 --> 6
-  ros::ServiceServer rack_picked_srv_;                  // 6 --> 7
+  ros::ServiceServer arrived_at_rack_srv_;              // 5 --> 6, 19 --> 20
+  ros::ServiceServer rack_picked_srv_;                  // 6 --> 7, 20 --> 21
   ros::ServiceServer go_from_first_to_second_room_srv_; // 7 --> 8
   ros::ServiceServer arrived_at_second_room_srv_;       // 8 --> 9
   ros::ServiceServer release_rack_srv_;                 // 9, 11 --> 12 (false), 14 (true)
   ros::ServiceServer go_from_second_to_next_room_srv_;  // 9 --> 10
   ros::ServiceServer arrived_at_next_room_srv_;         // 10 --> 11
   ros::ServiceServer go_to_next_room_srv_;              // 11 --> 10
-  ros::ServiceServer rack_released_srv_;                // 14 --> 15
+  ros::ServiceServer rack_released_srv_;                // 14 --> 15, 22 --> 23
   ros::ServiceServer rack_homed_srv_;                   // 12 --> 13
   ros::ServiceServer rack_placed_srv_;                  // 13 --> 15
-  ros::ServiceServer arrived_at_home_srv_;              // 15 (and 23) --> 1
+  ros::ServiceServer arrived_at_home_srv_;              // 15, 23 --> 1
 
   // _Recharge_ Mission
   ros::ServiceServer recharge_mission_received_srv_; // 1 --> 16
   ros::ServiceServer goal_calculated_srv_;           // 18 --> 19
   ros::ServiceServer rack_charged_srv_;              // 21 --> 22
-  // ros::ServiceServer elevator_down_srv_;          // 16 --> 17
-  // ros::ServiceServer rack_position_received_srv_; // 17 --> 18
-  // ros::ServiceServer arrived_at_rack_srv_;        // 19 --> 20
-  // ros::ServiceServer rack_picked_srv_;            // 20 --> 21
-  // ros::ServiceServer rack_released_srv_;          // 22 --> 23
-  // ros::ServiceServer arrived_at_home_srv_;        // 23 (and 15) --> 1
 
   //! Services Clients
-  // ros::ServiceClient out_of_battery_client_;
-  // ros::ServiceClient rack_position_received_client_;
-  // ros::ServiceClient goal_calculated_client_;
-  // ros::ServiceClient arrived_at_rack_client_;
-  // ros::ServiceClient rack_picked_client_;
-  // ros::ServiceClient arrived_at_home_client_;
 
   //! Action Clients
   std::shared_ptr<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>> move_base_ac_;
