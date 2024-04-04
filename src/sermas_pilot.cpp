@@ -1266,7 +1266,7 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
     else if (message == "up")
     {
       RCOMPONENT_ERROR_STREAM("Elevator is up, waiting for it to go down...");
-      // TODO: set the elevator down
+      // TODO: set the elevator down?
     }
   }
   tickTopicsHealth(elevator_sub_name_);
@@ -1508,6 +1508,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
   }
 
+  // TODO: puede que cambiemos lo de coger las coordenadas del mensaje
   // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM, 12_HOMING_RACK, or 14_RELEASING_RACK
   else if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
   {
