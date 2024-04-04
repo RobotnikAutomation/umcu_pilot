@@ -35,6 +35,14 @@ void SermasPilot::rosReadParams()
   {
     RCOMPONENT_ERROR_STREAM("Couldn't read locations!");
   }
+  if (readParam(pnh_, "rtls_ids", rtls_ids_, rtls_ids_, required))
+  {
+    loadRtlsIds(rtls_ids_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Couldn't read locations!");
+  }
 }
 
 int SermasPilot::rosSetup()
@@ -1880,44 +1888,60 @@ void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
   {
     XmlRpc::XmlRpcValue home = locations["home"];
     if (home.hasMember("robot"))
-      extractPose(home["robot"], home_robot_x_, home_robot_y_, home_robot_z_,
-                  home_robot_rot_x_, home_robot_rot_y_, home_robot_rot_z_, home_robot_rot_w_);
+    {
+      extractPose(home["robot"], home_robot_x_, home_robot_y_, home_robot_z_, home_robot_rot_x_, home_robot_rot_y_, home_robot_rot_z_, home_robot_rot_w_);
+      RCOMPONENT_INFO_STREAM("HOME ROOM robot: x=" << home_robot_x_ << ", y=" << home_robot_y_ << ", z=" << home_robot_z_ << ", rot_x=" << home_robot_rot_x_ << ", rot_y=" << home_robot_rot_y_ << ", rot_z=" << home_robot_rot_z_ << ", rot_w=" << home_robot_rot_w_);
+    }
     if (home.hasMember("pre_pick"))
-      extractPose(home["pre_pick"], home_pre_pick_x_, home_pre_pick_y_, home_pre_pick_z_,
-                  home_pre_pick_rot_x_, home_pre_pick_rot_y_, home_pre_pick_rot_z_, home_pre_pick_rot_w_);
+    {
+      extractPose(home["pre_pick"], home_pre_pick_x_, home_pre_pick_y_, home_pre_pick_z_, home_pre_pick_rot_x_, home_pre_pick_rot_y_, home_pre_pick_rot_z_, home_pre_pick_rot_w_);
+      RCOMPONENT_INFO_STREAM("HOME ROOM pre_pick: x=" << home_pre_pick_x_ << ", y=" << home_pre_pick_y_ << ", z=" << home_pre_pick_z_ << ", rot_x=" << home_pre_pick_rot_x_ << ", rot_y=" << home_pre_pick_rot_y_ << ", rot_z=" << home_pre_pick_rot_z_ << ", rot_w=" << home_pre_pick_rot_w_);
+    }
     if (home.hasMember("place"))
-      extractPose(home["place"], home_place_x_, home_place_y_, home_place_z_,
-                  home_place_rot_x_, home_place_rot_y_, home_place_rot_z_, home_place_rot_w_);
+    {
+      extractPose(home["place"], home_place_x_, home_place_y_, home_place_z_, home_place_rot_x_, home_place_rot_y_, home_place_rot_z_, home_place_rot_w_);
+      RCOMPONENT_INFO_STREAM("HOME ROOM place: x=" << home_place_x_ << ", y=" << home_place_y_ << ", z=" << home_place_z_ << ", rot_x=" << home_place_rot_x_ << ", rot_y=" << home_place_rot_y_ << ", rot_z=" << home_place_rot_z_ << ", rot_w=" << home_place_rot_w_);
+    }
   }
 
   if (locations.hasMember("room_1"))
   {
     XmlRpc::XmlRpcValue room_1 = locations["room_1"];
     if (room_1.hasMember("pre_pick"))
-      extractPose(room_1["pre_pick"], room_1_pre_pick_x_, room_1_pre_pick_y_, room_1_pre_pick_z_,
-                  room_1_pre_pick_rot_x_, room_1_pre_pick_rot_y_, room_1_pre_pick_rot_z_, room_1_pre_pick_rot_w_);
+    {
+      extractPose(room_1["pre_pick"], room_1_pre_pick_x_, room_1_pre_pick_y_, room_1_pre_pick_z_, room_1_pre_pick_rot_x_, room_1_pre_pick_rot_y_, room_1_pre_pick_rot_z_, room_1_pre_pick_rot_w_);
+      RCOMPONENT_INFO_STREAM("ROOM 1 pre_pick: x=" << room_1_pre_pick_x_ << ", y=" << room_1_pre_pick_y_ << ", z=" << room_1_pre_pick_z_ << ", rot_x=" << room_1_pre_pick_rot_x_ << ", rot_y=" << room_1_pre_pick_rot_y_ << ", rot_z=" << room_1_pre_pick_rot_z_ << ", rot_w=" << room_1_pre_pick_rot_w_);
+    }
     if (room_1.hasMember("place"))
-      extractPose(room_1["place"], room_1_place_x_, room_1_place_y_, room_1_place_z_,
-                  room_1_place_rot_x_, room_1_place_rot_y_, room_1_place_rot_z_, room_1_place_rot_w_);
+    {
+      extractPose(room_1["place"], room_1_place_x_, room_1_place_y_, room_1_place_z_, room_1_place_rot_x_, room_1_place_rot_y_, room_1_place_rot_z_, room_1_place_rot_w_);
+      RCOMPONENT_INFO_STREAM("ROOM 1 place: x=" << room_1_place_x_ << ", y=" << room_1_place_y_ << ", z=" << room_1_place_z_ << ", rot_x=" << room_1_place_rot_x_ << ", rot_y=" << room_1_place_rot_y_ << ", rot_z=" << room_1_place_rot_z_ << ", rot_w=" << room_1_place_rot_w_);
+    }
   }
 
   if (locations.hasMember("room_2"))
   {
     XmlRpc::XmlRpcValue room_2 = locations["room_2"];
     if (room_2.hasMember("pre_pick"))
-      extractPose(room_2["pre_pick"], room_2_pre_pick_x_, room_2_pre_pick_y_, room_2_pre_pick_z_,
-                  room_2_pre_pick_rot_x_, room_2_pre_pick_rot_y_, room_2_pre_pick_rot_z_, room_2_pre_pick_rot_w_);
+    {
+      extractPose(room_2["pre_pick"], room_2_pre_pick_x_, room_2_pre_pick_y_, room_2_pre_pick_z_, room_2_pre_pick_rot_x_, room_2_pre_pick_rot_y_, room_2_pre_pick_rot_z_, room_2_pre_pick_rot_w_);
+      RCOMPONENT_INFO_STREAM("ROOM 2 pre_pick: x=" << room_2_pre_pick_x_ << ", y=" << room_2_pre_pick_y_ << ", z=" << room_2_pre_pick_z_ << ", rot_x=" << room_2_pre_pick_rot_x_ << ", rot_y=" << room_2_pre_pick_rot_y_ << ", rot_z=" << room_2_pre_pick_rot_z_ << ", rot_w=" << room_2_pre_pick_rot_w_);
+    }
     if (room_2.hasMember("place"))
-      extractPose(room_2["place"], room_2_place_x_, room_2_place_y_, room_2_place_z_,
-                  room_2_place_rot_x_, room_2_place_rot_y_, room_2_place_rot_z_, room_2_place_rot_w_);
+    {
+      extractPose(room_2["place"], room_2_place_x_, room_2_place_y_, room_2_place_z_, room_2_place_rot_x_, room_2_place_rot_y_, room_2_place_rot_z_, room_2_place_rot_w_);
+      RCOMPONENT_INFO_STREAM("ROOM 2 place: x=" << room_2_place_x_ << ", y=" << room_2_place_y_ << ", z=" << room_2_place_z_ << ", rot_x=" << room_2_place_rot_x_ << ", rot_y=" << room_2_place_rot_y_ << ", rot_z=" << room_2_place_rot_z_ << ", rot_w=" << room_2_place_rot_w_);
+    }
   }
 
   if (locations.hasMember("room_3"))
   {
     XmlRpc::XmlRpcValue room_3 = locations["room_3"];
     if (room_3.hasMember("place"))
-      extractPose(room_3["place"], room_3_place_x_, room_3_place_y_, room_3_place_z_,
-                  room_3_place_rot_x_, room_3_place_rot_y_, room_3_place_rot_z_, room_3_place_rot_w_);
+    {
+      extractPose(room_3["place"], room_3_place_x_, room_3_place_y_, room_3_place_z_, room_3_place_rot_x_, room_3_place_rot_y_, room_3_place_rot_z_, room_3_place_rot_w_);
+      RCOMPONENT_INFO_STREAM("ROOM 3 place: x=" << room_3_place_x_ << ", y=" << room_3_place_y_ << ", z=" << room_3_place_z_ << ", rot_x=" << room_3_place_rot_x_ << ", rot_y=" << room_3_place_rot_y_ << ", rot_z=" << room_3_place_rot_z_ << ", rot_w=" << room_3_place_rot_w_);
+    }
   }
 
   if (locations.hasMember("docking_stations"))
@@ -1929,9 +1953,14 @@ void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
       if (homeDocking.getType() == XmlRpc::XmlRpcValue::TypeStruct)
       {
         if (homeDocking.hasMember("x"))
+        {
           home_docking_x_ = static_cast<double>(homeDocking["x"]);
+        }
         if (homeDocking.hasMember("y"))
+        {
           home_docking_y_ = static_cast<double>(homeDocking["y"]);
+        }
+        RCOMPONENT_INFO_STREAM("HOME ROOM docking: x=" << home_docking_x_ << ", y=" << home_docking_y_);
       }
     }
 
@@ -1941,9 +1970,14 @@ void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
       if (room1Docking.getType() == XmlRpc::XmlRpcValue::TypeStruct)
       {
         if (room1Docking.hasMember("x"))
+        {
           room_1_docking_x_ = static_cast<double>(room1Docking["x"]);
+        }
         if (room1Docking.hasMember("y"))
+        {
           room_1_docking_y_ = static_cast<double>(room1Docking["y"]);
+        }
+        RCOMPONENT_INFO_STREAM("ROOM 1 docking: x=" << room_1_docking_x_ << ", y=" << room_1_docking_y_);
       }
     }
 
@@ -1953,23 +1987,31 @@ void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
       if (room2Docking.getType() == XmlRpc::XmlRpcValue::TypeStruct)
       {
         if (room2Docking.hasMember("x"))
+        {
           room_2_docking_x_ = static_cast<double>(room2Docking["x"]);
+        }
         if (room2Docking.hasMember("y"))
+        {
           room_2_docking_y_ = static_cast<double>(room2Docking["y"]);
+        }
+        RCOMPONENT_INFO_STREAM("ROOM 2 docking: x=" << room_2_docking_x_ << ", y=" << room_2_docking_y_);
       }
     }
   }
+}
 
-  RCOMPONENT_INFO_STREAM("HOME ROOM robot: x=" << home_robot_x_ << ", y=" << home_robot_y_ << ", z=" << home_robot_z_ << ", rot_x=" << home_robot_rot_x_ << ", rot_y=" << home_robot_rot_y_ << ", rot_z=" << home_robot_rot_z_ << ", rot_w=" << home_robot_rot_w_);
-  RCOMPONENT_INFO_STREAM("HOME ROOM pre_pick: x=" << home_pre_pick_x_ << ", y=" << home_pre_pick_y_ << ", z=" << home_pre_pick_z_ << ", rot_x=" << home_pre_pick_rot_x_ << ", rot_y=" << home_pre_pick_rot_y_ << ", rot_z=" << home_pre_pick_rot_z_ << ", rot_w=" << home_pre_pick_rot_w_);
-  RCOMPONENT_INFO_STREAM("HOME ROOM place: x=" << home_place_x_ << ", y=" << home_place_y_ << ", z=" << home_place_z_ << ", rot_x=" << home_place_rot_x_ << ", rot_y=" << home_place_rot_y_ << ", rot_z=" << home_place_rot_z_ << ", rot_w=" << home_place_rot_w_);
-  RCOMPONENT_INFO_STREAM("ROOM 1 pre_pick: x=" << room_1_pre_pick_x_ << ", y=" << room_1_pre_pick_y_ << ", z=" << room_1_pre_pick_z_ << ", rot_x=" << room_1_pre_pick_rot_x_ << ", rot_y=" << room_1_pre_pick_rot_y_ << ", rot_z=" << room_1_pre_pick_rot_z_ << ", rot_w=" << room_1_pre_pick_rot_w_);
-  RCOMPONENT_INFO_STREAM("ROOM 1 place: x=" << room_1_place_x_ << ", y=" << room_1_place_y_ << ", z=" << room_1_place_z_ << ", rot_x=" << room_1_place_rot_x_ << ", rot_y=" << room_1_place_rot_y_ << ", rot_z=" << room_1_place_rot_z_ << ", rot_w=" << room_1_place_rot_w_);
-  RCOMPONENT_INFO_STREAM("ROOM 2 pre_pick: x=" << room_2_pre_pick_x_ << ", y=" << room_2_pre_pick_y_ << ", z=" << room_2_pre_pick_z_ << ", rot_x=" << room_2_pre_pick_rot_x_ << ", rot_y=" << room_2_pre_pick_rot_y_ << ", rot_z=" << room_2_pre_pick_rot_z_ << ", rot_w=" << room_2_pre_pick_rot_w_);
-  RCOMPONENT_INFO_STREAM("ROOM 2 place: x=" << room_2_place_x_ << ", y=" << room_2_place_y_ << ", z=" << room_2_place_z_ << ", rot_x=" << room_2_place_rot_x_ << ", rot_y=" << room_2_place_rot_y_ << ", rot_z=" << room_2_place_rot_z_ << ", rot_w=" << room_2_place_rot_w_);
-  RCOMPONENT_INFO_STREAM("ROOM 3 place: x=" << room_3_place_x_ << ", y=" << room_3_place_y_ << ", z=" << room_3_place_z_ << ", rot_x=" << room_3_place_rot_x_ << ", rot_y=" << room_3_place_rot_y_ << ", rot_z=" << room_3_place_rot_z_ << ", rot_w=" << room_3_place_rot_w_);
-  RCOMPONENT_INFO_STREAM("HOME ROOM docking: x=" << home_docking_x_ << ", y=" << home_docking_y_);
-  RCOMPONENT_INFO_STREAM("ROOM 1 docking: x=" << room_1_docking_x_ << ", y=" << room_1_docking_y_);
-  RCOMPONENT_INFO_STREAM("ROOM 2 docking: x=" << room_2_docking_x_ << ", y=" << room_2_docking_y_);
+void SermasPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
+{
+  auto extractId = [&](const std::string &key, std::string &storage)
+  {
+    if (rtlsIds.hasMember(key))
+    {
+      storage = static_cast<std::string>(rtlsIds[key]);
+      RCOMPONENT_INFO_STREAM(key << ": " << storage);
+    }
+  };
+
+  extractId("id_1", id_1_);
+  extractId("id_2", id_2_);
 }
 /* Callbacks !*/

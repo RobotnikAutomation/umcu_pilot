@@ -179,8 +179,6 @@ protected:
   float battery_status_{0.0};
   geometry_msgs::PoseWithCovarianceStamped pose_;
 
-  XmlRpc::XmlRpcValue locations_;
-
   //! State Machine
   void runRobotStateMachine();
   void changeState(const string &next_state, const string &additional_information);
@@ -336,6 +334,11 @@ protected:
   void chargingRackState();
 
   void loadLocationParameters(XmlRpc::XmlRpcValue &locations);
+  XmlRpc::XmlRpcValue locations_;
+  void loadRtlsIds(XmlRpc::XmlRpcValue &rtls_ids);
+  XmlRpc::XmlRpcValue rtls_ids_;
+  string id_1_;
+  string id_2_;
   /* SermasPilot Stuff !*/
 };
 
