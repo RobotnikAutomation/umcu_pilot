@@ -337,8 +337,8 @@ protected:
   XmlRpc::XmlRpcValue locations_;
   void loadRtlsIds(XmlRpc::XmlRpcValue &rtls_ids);
   XmlRpc::XmlRpcValue rtls_ids_;
-  string id_1_;
-  string id_2_;
+  string rtls_id_1_;
+  string rtls_id_2_;
   /* SermasPilot Stuff !*/
 };
 

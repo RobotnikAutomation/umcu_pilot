@@ -2011,7 +2011,7 @@ void SermasPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
     }
   };
 
-  extractId("id_1", id_1_);
-  extractId("id_2", id_2_);
+  extractId("id_1", rtls_id_1_);
+  extractId("id_2", rtls_id_2_);
 }
 /* Callbacks !*/
