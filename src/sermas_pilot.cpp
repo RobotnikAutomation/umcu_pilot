@@ -971,13 +971,13 @@ bool SermasPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request
 }
 
 //! 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-bool SermasPilot::goToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool SermasPilot::goToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
 {
   if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
   {
-    changeState("10_NAVIGATING_TO_NEXT_ROOM", "Rack picked!");
+    changeState("10_NAVIGATING_TO_NEXT_ROOM", "The '" + request.input + "' button is pressed in the HMI!");
     response.success = true;
-    response.message = "Rack picked! Switching from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM.";
+    response.message = "The '" + request.input + "' button is pressed in the HMI! Switching from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM.";
     return true;
   }
   else
@@ -1515,11 +1515,27 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    // TODO: Add all possible rooms?
-    if (message == "GO TO ROOM X")
+    if (message == go_to_room_1_ || message == go_to_room_2_ || message == go_to_room_3_)
     {
-      std_srvs::TriggerRequest go_to_next_room_srv_request;
-      std_srvs::TriggerResponse go_to_next_room_srv_response;
+      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      {
+        next_room_x_ = msg->data.data.endLocation.position[0];
+        next_room_y_ = msg->data.data.endLocation.position[1];
+        next_room_z_ = msg->data.data.endLocation.position[2];
+        next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+        next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+        next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+        next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+        return;
+      }
+
+      odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
+      go_to_next_room_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_to_next_room_srv_response;
 
       if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
       {
