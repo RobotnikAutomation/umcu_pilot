@@ -182,10 +182,15 @@ protected:
   //! State Machine
   void runRobotStateMachine();
   void changeState(const string &next_state, const string &additional_information);
+  string pick_up_rack_;
+  string go_to_room_1_;
+  string go_to_room_2_;
+  string go_to_room_3_;
+  string release_and_home_;
+  string bring_rack_home_;
 
   //! 1_WAITING_FOR_MISSION
   void waitingForMissionState();
-  bool mission_received_;
 
   double home_robot_x_{0.0};
   double home_robot_y_{0.0};

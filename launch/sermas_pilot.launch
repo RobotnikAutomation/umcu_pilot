@@ -25,6 +25,14 @@
 	<arg name="place_sequence" default="PLACE_SEQUENCE"/>
 	<arg name="release_sequence" default="RELEASE_AND_HOME"/>
 
+	<!-- Commands -->
+	<arg name="pick_up_rack" default="PICK UP RACK"/>
+	<arg name="go_to_room_1" default="GO TO ROOM 1"/>
+	<arg name="go_to_room_2" default="GO TO ROOM 2"/>
+	<arg name="go_to_room_3" default="GO TO ROOM 3"/>
+	<arg name="release_and_home" default="RELEASE AND HOME"/>
+	<arg name="bring_rack_home" default="BRING RACK HOME"/>
+
 	<!-- <group ns="$(arg id_robot)"> -->
 		<!-- start SermasPilot node -->
 		<node name="sermas_pilot" pkg="sermas_pilot" type="sermas_pilot_node" output="screen" respawn="false" launch-prefix="$(arg launch_prefix)">
@@ -41,6 +49,12 @@
 			<param name="pick_sequence" value="$(arg pick_sequence)"/>
 			<param name="place_sequence" value="$(arg place_sequence)"/>
 			<param name="release_sequence" value="$(arg release_sequence)"/>
+			<param name="pick_up_rack" value="$(arg pick_up_rack)"/>
+			<param name="go_to_room_1" value="$(arg go_to_room_1)"/>
+			<param name="go_to_room_2" value="$(arg go_to_room_2)"/>
+			<param name="go_to_room_3" value="$(arg go_to_room_3)"/>
+			<param name="release_and_home" value="$(arg release_and_home)"/>
+			<param name="bring_rack_home" value="$(arg bring_rack_home)"/>
 		</node>
 	<!-- </group> -->
 

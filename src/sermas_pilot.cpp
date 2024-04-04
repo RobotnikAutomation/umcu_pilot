@@ -27,6 +27,12 @@ void SermasPilot::rosReadParams()
   readParam(pnh_, "pick_sequence", pick_sequence_, "TEST_ALLINEAMENTO_RUOTE", required);
   readParam(pnh_, "place_sequence", place_sequence_, "PLACE_SEQUENCE", required);
   readParam(pnh_, "release_sequence", release_sequence_, "RELEASE_AND_HOME", required);
+  readParam(pnh_, "pick_up_rack", pick_up_rack_, "PICK UP RACK", required);
+  readParam(pnh_, "go_to_room_1", go_to_room_1_, "GO TO ROOM 1", required);
+  readParam(pnh_, "go_to_room_2", go_to_room_2_, "GO TO ROOM 2", required);
+  readParam(pnh_, "go_to_room_3", go_to_room_3_, "GO TO ROOM 3", required);
+  readParam(pnh_, "release_and_home", release_and_home_, "RELEASE AND HOME", required);
+  readParam(pnh_, "bring_rack_home", bring_rack_home_, "BRING RACK HOME", required);
   if (readParam(pnh_, "locations", locations_, locations_, required))
   {
     loadLocationParameters(locations_);
@@ -847,9 +853,9 @@ bool SermasPilot::goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &r
 {
   if (current_state_ == "7_WAITING_IN_FIRST_ROOM")
   {
-    changeState("8_NAVIGATING_TO_SECOND_ROOM", "The 'GO TO ROOM 2' button is pressed in the HMI!");
+    changeState("8_NAVIGATING_TO_SECOND_ROOM", "The '" + go_to_room_2_ + "' button is pressed in the HMI!");
     response.success = true;
-    response.message = "The 'GO TO ROOM 2' button is pressed in the HMI! Switching from 7_WAITING_IN_FIRST_ROOM to 8_NAVIGATING_TO_SECOND_ROOM.";
+    response.message = "The '" + go_to_room_2_ + "' button is pressed in the HMI! Switching from 7_WAITING_IN_FIRST_ROOM to 8_NAVIGATING_TO_SECOND_ROOM.";
     return true;
   }
   else
@@ -1336,7 +1342,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-    if (message == "PICK UP RACK")
+    if (message == pick_up_rack_)
     {
       std_srvs::TriggerRequest pickup_mission_received_srv_request;
       std_srvs::TriggerResponse pickup_mission_received_srv_response;
@@ -1365,7 +1371,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
-    if (message == "GO TO ROOM 2")
+    if (message == go_to_room_2_)
     {
       // When waiting in the first room, we can only go to the second room, so we don't need the coordinates
       // if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
@@ -1412,7 +1418,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    if (message == "GO TO ROOM 1" || message == "GO TO ROOM 3")
+    if (message == go_to_room_1_ || message == go_to_room_3_)
     {
       if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
       {
@@ -1452,7 +1458,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
 
     // 9_WAITING_IN_SECOND_ROOM --> 12_HOMING_RACK
-    else if (message == "BRING RACK HOME")
+    else if (message == bring_rack_home_)
     {
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
@@ -1477,7 +1483,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
 
     // 9_WAITING_IN_SECOND_ROOM --> 14_RELEASING_RACK
-    else if (message == "RELEASE AND HOME")
+    else if (message == release_and_home_)
     {
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
@@ -1533,7 +1539,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
 
     // 11_WAITING_IN_NEXT_ROOM --> 12_HOMING_RACK
-    else if (message == "BRING RACK HOME")
+    else if (message == bring_rack_home_)
     {
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
@@ -1558,7 +1564,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     }
 
     // 11_WAITING_IN_NEXT_ROOM --> 14_RELEASING_RACK
-    else if (message == "RELEASE AND HOME")
+    else if (message == release_and_home_)
     {
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
