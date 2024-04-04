@@ -1271,8 +1271,7 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
-    // TODO during pilot: Set correct ID
-    if (msg->data.id == "ble-pd-601283DE0245" or msg->data.id == "ble-pd-601283DE0246")
+    if (msg->data.id == rtls_id_1_ or msg->data.id == rtls_id_2_)
     {
       rack_x_ = msg->data.data.x;
       rack_y_ = msg->data.data.y;
