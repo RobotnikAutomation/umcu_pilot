@@ -1271,7 +1271,7 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
-    if (msg->data.id == rtls_id_1_ or msg->data.id == rtls_id_2_)
+    if (msg->data.id == rtls_id_1_ || msg->data.id == rtls_id_2_)
     {
       rack_x_ = msg->data.data.x;
       rack_y_ = msg->data.data.y;
@@ -1299,8 +1299,7 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
   }
   else if (current_state_ == "17_GETTING_RACK_POSITION")
   {
-    // TODO during pilot: Set correct IDs and parametrize them
-    if (msg->data.id == "ble-pd-601283DE0245" or msg->data.id == "ble-pd-601283DE0246")
+    if (msg->data.id == rtls_id_1_ || msg->data.id == rtls_id_2_)
     {
       rack_x_ = msg->data.data.x;
       rack_y_ = msg->data.data.y;
