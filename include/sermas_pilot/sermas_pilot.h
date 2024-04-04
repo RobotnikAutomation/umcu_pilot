@@ -24,6 +24,7 @@
 // Srvs
 #include <std_srvs/Trigger.h>
 #include <std_srvs/SetBool.h>
+#include <odin_msgs/StringTrigger.h>
 
 // Actions
 #include <move_base_msgs/MoveBaseAction.h>
@@ -156,7 +157,7 @@ protected:
   // 9_WAITING_IN_SECOND_ROOM or 11_WAITING_IN_NEXT_ROOM --> 12_HOMING_RACK or 14_RELEASING_RACK
   bool releaseRackServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response);
   // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-  bool goFromSecondToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
+  bool goFromSecondToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response);
   // 10_NAVIGATING_TO_NEXT_ROOM --> 11_WAITING_IN_NEXT_ROOM
   bool arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response);
   // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM

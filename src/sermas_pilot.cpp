@@ -919,13 +919,13 @@ bool SermasPilot::releaseRackServiceCb(std_srvs::SetBool::Request &request, std_
 }
 
 //! 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-bool SermasPilot::goFromSecondToNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool SermasPilot::goFromSecondToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
 {
   if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
   {
-    changeState("10_NAVIGATING_TO_NEXT_ROOM", "The 'GO TO ROOM X' button is pressed in the HMI!");
+    changeState("10_NAVIGATING_TO_NEXT_ROOM", "The '" + request.input + "' button is pressed in the HMI!");
     response.success = true;
-    response.message = "The 'GO TO ROOM X' button is pressed in the HMI!! Switching from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM.";
+    response.message = "The '" + request.input + "' button is pressed in the HMI!! Switching from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM.";
     return true;
   }
   else
@@ -1424,8 +1424,9 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
         return;
       }
 
-      std_srvs::TriggerRequest go_from_second_to_next_srv_request;
-      std_srvs::TriggerResponse go_from_second_to_next_srv_response;
+      odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
+      go_from_second_to_next_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;
 
       if (goFromSecondToNextRoomServiceCb(go_from_second_to_next_srv_request, go_from_second_to_next_srv_response))
       {
