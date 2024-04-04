@@ -732,14 +732,14 @@ bool SermasPilot::rackPositionReceivedServiceCb(std_srvs::Trigger::Request &requ
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
-    changeState("4_CHECKING_RACK_POSITION", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_) + ", z=" + std::to_string(rack_z_));
+    changeState("4_CHECKING_RACK_POSITION", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_));
     response.success = true;
     response.message = "Location received! Switching from 3_GETTING_RACK_POSITION to 4_CHECKING_RACK_POSITION.";
     return true;
   }
   else if (current_state_ == "17_GETTING_RACK_POSITION")
   {
-    changeState("18_CALCULATING_GOAL", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_) + ", z=" + std::to_string(rack_z_));
+    changeState("18_CALCULATING_GOAL", "Rack position received from RTLS: x=" + std::to_string(rack_x_) + ", y=" + std::to_string(rack_y_));
     response.success = true;
     response.message = "Location received! Switching from 17_GETTING_RACK_POSITION to 18_CALCULATING_GOAL.";
     return true;
