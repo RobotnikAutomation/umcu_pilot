@@ -15,7 +15,7 @@
 	<arg name="robot_result_pub" default="/sermas_pilot/robot_result" /> 	<!-- mqtt-odin-platform-robot-result-kafka -->
 	<arg name="rtls_sub" default="/sermas_pilot/RTLS" /> 	<!-- kafka-odin-platform-iot-rtls-positions-mqqt -->
 	<arg name="smartbox_sub" default="/sermas_pilot/smartbox" /> 	<!-- kafka-odin-platform-smartbox-status-mqtt -->
-	<arg name="hmi_sub" default="/sermas_pilot/hmi" /> 	<!-- mqtt-odin-platform-interface-kafka -->
+	<arg name="hmi_sub" default="/sermas_pilot/hmi" /> 	<!-- kafka-odin-platform-interface-mqtt -->
 	<arg name="elevator_sub" default="/robot/robotnik_base_control/elevator_status" />
 	<arg name="battery_sub" default="/robot/battery_estimator/data" />
 	<arg name="pose_sub" default="/robot/amcl_pose" />
