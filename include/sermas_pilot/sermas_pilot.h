@@ -10,6 +10,7 @@
 
 // Msgs
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <odin_msgs/HMIBase.h>
 #include <odin_msgs/ProxSensor.h>
 #include <odin_msgs/RobotStatus.h>
@@ -74,16 +75,23 @@ protected:
   //! Subscribers
   ros::Subscriber smartbox_sub_;
   string smartbox_sub_name_;
+  
   ros::Subscriber rtls_sub_;
   string rtls_sub_name_;
+  
   ros::Subscriber hmi_sub_;
   string hmi_sub_name_;
+  
   ros::Subscriber elevator_sub_;
   string elevator_sub_name_;
+  
   ros::Subscriber battery_sub_;
   string battery_sub_name_;
+  
   ros::Subscriber pose_sub_;
   string pose_sub_name_;
+
+  ros::Subscriber move_base_feedback_sub_;
 
   //! Services Servers
   // _Pick Up_ Mission
@@ -126,6 +134,7 @@ protected:
   void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
   void batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg);
   void poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
+  void moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback);
 
   //! Service Callbacks
   // _Pick Up Mission

@@ -78,6 +78,7 @@ int SermasPilot::rosSetup()
   addTopicsHealth(&battery_sub_, battery_sub_name_, 50.0, not_required);
   pose_sub_ = nh_.subscribe<>(pose_sub_name_, 10, &SermasPilot::poseSubCb, this);
   addTopicsHealth(&pose_sub_, pose_sub_name_, 50.0, not_required);
+  move_base_feedback_sub_ = nh_.subscribe<move_base_msgs::MoveBaseActionFeedback>("/robot/move_base/feedback", 10, &SermasPilot::moveBaseFeedbackCb, this);
 
   //! Service Servers
   // _Pick Up_ Mission
@@ -1709,11 +1710,15 @@ void SermasPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::Cons
   tickTopicsHealth(pose_sub_name_);
 }
 
+void SermasPilot::moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback)
+{
+  robot_result_.data.taskResult = feedback->status.text;
+  tickTopicsHealth("/robot/move_base/feedback");
+}
+
 //! Action Callbacks
 void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result)
 {
-  robot_result_.data.taskResult = state.toString();
-
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     std_srvs::TriggerRequest move_base_srv_request;
