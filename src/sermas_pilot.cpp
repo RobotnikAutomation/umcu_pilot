@@ -79,6 +79,7 @@ int SermasPilot::rosSetup()
   pose_sub_ = nh_.subscribe<>(pose_sub_name_, 10, &SermasPilot::poseSubCb, this);
   addTopicsHealth(&pose_sub_, pose_sub_name_, 50.0, not_required);
   move_base_feedback_sub_ = nh_.subscribe<move_base_msgs::MoveBaseActionFeedback>("/robot/move_base/feedback", 10, &SermasPilot::moveBaseFeedbackCb, this);
+  addTopicsHealth(&move_base_feedback_sub_, "/robot/move_base/feedback", 50.0, not_required);
 
   //! Service Servers
   // _Pick Up_ Mission
@@ -1354,11 +1355,10 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 
 void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 {
-  robot_result_.data.taskType = msg->data.data.taskType;
-
   // 1_WAITING_FOR_MISSION --> 2_CHECKING_ELEVATOR
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
+    robot_result_.data.taskType = msg->data.data.taskType;
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
@@ -1388,6 +1388,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   // 7_WAITING_IN_FIRST_ROOM --> 8_NAVIGATING_TO_SECOND_ROOM
   else if (current_state_ == "7_WAITING_IN_FIRST_ROOM")
   {
+    robot_result_.data.taskType = msg->data.data.taskType;
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
@@ -1434,6 +1435,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM, 12_HOMING_RACK, or 14_RELEASING_RACK
   else if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
   {
+    robot_result_.data.taskType = msg->data.data.taskType;
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
@@ -1523,7 +1525,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       next_room_rot_y_ = home_pre_pick_rot_y_;
       next_room_rot_z_ = home_pre_pick_rot_z_;
       next_room_rot_w_ = home_pre_pick_rot_w_;
-    
+
       odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
       go_from_second_to_next_srv_request.input = message;
       odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;
@@ -1548,6 +1550,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 9_WAITING_IN_SECOND_ROOM --> 12_HOMING_RACK
     else if (message == bring_rack_home_)
     {
+      robot_result_.data.taskType = msg->data.data.taskType;
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1573,6 +1576,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 9_WAITING_IN_SECOND_ROOM --> 14_RELEASING_RACK
     else if (message == release_and_home_)
     {
+      robot_result_.data.taskType = msg->data.data.taskType;
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1600,6 +1604,8 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
   // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM, 12_HOMING_RACK, or 14_RELEASING_RACK
   else if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
   {
+    robot_result_.data.taskType = msg->data.data.taskType;
+    robot_result_.data.taskType = msg->data.data.taskType;
     std::string message = msg->data.data.taskType;
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
@@ -1646,6 +1652,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 11_WAITING_IN_NEXT_ROOM --> 12_HOMING_RACK
     else if (message == bring_rack_home_)
     {
+      robot_result_.data.taskType = msg->data.data.taskType;
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1671,6 +1678,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     // 11_WAITING_IN_NEXT_ROOM --> 14_RELEASING_RACK
     else if (message == release_and_home_)
     {
+      robot_result_.data.taskType = msg->data.data.taskType;
       std_srvs::SetBoolRequest release_and_home_srv_request;
       std_srvs::SetBoolResponse release_and_home_srv_response;
 
@@ -1710,10 +1718,39 @@ void SermasPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::Cons
   tickTopicsHealth(pose_sub_name_);
 }
 
-void SermasPilot::moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback)
+void SermasPilot::moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr &feedback)
 {
-  robot_result_.data.taskResult = feedback->status.text;
+  robot_result_.data.taskResult = statusToString(feedback->status.status);
   tickTopicsHealth("/robot/move_base/feedback");
+}
+
+std::string SermasPilot::statusToString(uint8_t status)
+{
+  switch (status)
+  {
+  case 0:
+    return "PENDING";
+  case 1:
+    return "ACTIVE";
+  case 2:
+    return "PREEMPTED";
+  case 3:
+    return "SUCCEEDED";
+  case 4:
+    return "ABORTED";
+  case 5:
+    return "REJECTED";
+  case 6:
+    return "PREEMPTING";
+  case 7:
+    return "RECALLING";
+  case 8:
+    return "RECALLED";
+  case 9:
+    return "LOST";
+  default:
+    return "UNKNOWN";
+  }
 }
 
 //! Action Callbacks

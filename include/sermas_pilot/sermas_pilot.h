@@ -75,19 +75,19 @@ protected:
   //! Subscribers
   ros::Subscriber smartbox_sub_;
   string smartbox_sub_name_;
-  
+
   ros::Subscriber rtls_sub_;
   string rtls_sub_name_;
-  
+
   ros::Subscriber hmi_sub_;
   string hmi_sub_name_;
-  
+
   ros::Subscriber elevator_sub_;
   string elevator_sub_name_;
-  
+
   ros::Subscriber battery_sub_;
   string battery_sub_name_;
-  
+
   ros::Subscriber pose_sub_;
   string pose_sub_name_;
 
@@ -134,7 +134,8 @@ protected:
   void elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg);
   void batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg);
   void poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg);
-  void moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr& feedback);
+  void moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr &feedback);
+  std::string statusToString(uint8_t status);
 
   //! Service Callbacks
   // _Pick Up Mission
