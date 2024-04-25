@@ -30,6 +30,7 @@
 	<arg name="go_to_room_1" default="GO TO ROOM 1"/>
 	<arg name="go_to_room_2" default="GO TO ROOM 2"/>
 	<arg name="go_to_room_3" default="GO TO ROOM 3"/>
+	<arg name="go_to_home_room" default="GO TO HOME ROOM"/>
 	<arg name="release_and_home" default="RELEASE AND HOME"/>
 	<arg name="bring_rack_home" default="BRING RACK HOME"/>
 
@@ -53,6 +54,7 @@
 			<param name="go_to_room_1" value="$(arg go_to_room_1)"/>
 			<param name="go_to_room_2" value="$(arg go_to_room_2)"/>
 			<param name="go_to_room_3" value="$(arg go_to_room_3)"/>
+			<param name="go_to_home_room" value="$(arg go_to_home_room)"/>
 			<param name="release_and_home" value="$(arg release_and_home)"/>
 			<param name="bring_rack_home" value="$(arg bring_rack_home)"/>
 		</node>

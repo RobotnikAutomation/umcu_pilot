@@ -3,81 +3,81 @@ rtls_ids:
   id_2: "ble-pd-601283DE0246"
 
 locations:
-  home:
+  home: # Surgery (right now Corridor)
     robot:
-      x: 0.0
-      y: 0.0
+      x: 24.4469199982
+      y: 21.33334167164
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0
+      rot_z: 0.742626028641
+      rot_w: 0.669706339812
     pre_pick:
-      x: 0.0
-      y: 0.0
+      x: 27.59425577978
+      y: 7.8308156872
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0      
+      rot_z: -0.696361410595
+      rot_w: 0.717691288671
     place:
-      x: 0.0
-      y: 0.0
+      x: 27.59425577978
+      y: 7.8308156872
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0
-  room_1:
+      rot_z: -0.696361410595
+      rot_w: 0.717691288671
+  room_1: # Restroom
     pre_pick:
-      x: 0.0
-      y: 0.0
+      x: 13.40576442356
+      y: 21.06667079536
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0      
+      rot_z: -0.682153375602
+      rot_w: 0.73120911657      
     place:
-      x: 0.0
-      y: 0.0
+      x: 13.40576442356
+      y: 21.06667079536
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0
-  room_2:
+      rot_z: -0.682153375602
+      rot_w: 0.73120911657
+  room_2: # Meeting room (right now in Catering)
     pre_pick:
-      x: 0.0
-      y: 0.0
+      x: 27.81900569757
+      y: 27.90127362401
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0      
+      rot_z: 0.171921195891
+      rot_w: 0.981389288884
     place:
-      x: 0.0
-      y: 0.0
+      x: 27.81900569757
+      y: 27.90122736240
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0
-  room_3:
+      rot_z: 0.171921195891
+      rot_w: 0.981389288884
+  room_3: # Next to surgery
     place:
-      x: 0.0
-      y: 0.0
+      x: 42.4468183556
+      y: 12.42894246403
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.0
-      rot_w: 0.0
+      rot_z: -0.974697693187
+      rot_w: 0.223527194981
   docking_stations:
-    home:
-      x: 0.0
-      y: 0.0
-    room_1:
-      x: 0.0
-      y: 0.0
-    room_2:
-      x: 0.0
-      y: 0.0
+    home: # Surgery (corridor so far)
+      x: 26.0332752762
+      y: 21.61848034854
+    room_1: # Restroom
+      x: 13.4742
+      y: 20.2464
+    room_2: # Meeting room (right now Catering)
+      x: 27.81525073601
+      y: 27.90945307368

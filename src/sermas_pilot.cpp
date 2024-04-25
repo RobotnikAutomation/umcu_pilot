@@ -31,6 +31,7 @@ void SermasPilot::rosReadParams()
   readParam(pnh_, "go_to_room_1", go_to_room_1_, "GO TO ROOM 1", required);
   readParam(pnh_, "go_to_room_2", go_to_room_2_, "GO TO ROOM 2", required);
   readParam(pnh_, "go_to_room_3", go_to_room_3_, "GO TO ROOM 3", required);
+  readParam(pnh_, "go_to_home_room", go_to_home_room_, "GO TO HOME ROOM", required);
   readParam(pnh_, "release_and_home", release_and_home_, "RELEASE AND HOME", required);
   readParam(pnh_, "bring_rack_home", bring_rack_home_, "BRING RACK HOME", required);
   if (readParam(pnh_, "locations", locations_, locations_, required))
@@ -519,13 +520,20 @@ void SermasPilot::homingRackState()
 
     move_base_goal_.target_pose.header.stamp = ros::Time::now();
     move_base_goal_.target_pose.header.frame_id = "robot_map";
-    move_base_goal_.target_pose.pose.position.x = home_place_x_;
-    move_base_goal_.target_pose.pose.position.y = home_place_y_;
-    move_base_goal_.target_pose.pose.position.z = home_place_z_;
-    move_base_goal_.target_pose.pose.orientation.x = home_place_rot_x_;
-    move_base_goal_.target_pose.pose.orientation.y = home_place_rot_y_;
-    move_base_goal_.target_pose.pose.orientation.z = home_place_rot_z_;
-    move_base_goal_.target_pose.pose.orientation.w = home_place_rot_w_;
+    // move_base_goal_.target_pose.pose.position.x = home_place_x_;
+    // move_base_goal_.target_pose.pose.position.y = home_place_y_;
+    // move_base_goal_.target_pose.pose.position.z = home_place_z_;
+    // move_base_goal_.target_pose.pose.orientation.x = home_place_rot_x_;
+    // move_base_goal_.target_pose.pose.orientation.y = home_place_rot_y_;
+    // move_base_goal_.target_pose.pose.orientation.z = home_place_rot_z_;
+    // move_base_goal_.target_pose.pose.orientation.w = home_place_rot_w_;
+    move_base_goal_.target_pose.pose.position.x = room_1_place_x_;
+    move_base_goal_.target_pose.pose.position.y = room_1_place_y_;
+    move_base_goal_.target_pose.pose.position.z = room_1_place_z_;
+    move_base_goal_.target_pose.pose.orientation.x = room_1_place_rot_x_;
+    move_base_goal_.target_pose.pose.orientation.y = room_1_place_rot_y_;
+    move_base_goal_.target_pose.pose.orientation.z = room_1_place_rot_z_;
+    move_base_goal_.target_pose.pose.orientation.w = room_1_place_rot_w_;
     move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
@@ -1418,24 +1426,92 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    if (message == go_to_room_1_ || message == go_to_room_3_)
+    if (message == go_to_room_1_)
     {
-      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // {
+      //   next_room_x_ = msg->data.data.endLocation.position[0];
+      //   next_room_y_ = msg->data.data.endLocation.position[1];
+      //   next_room_z_ = msg->data.data.endLocation.position[2];
+      //   next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+      //   next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+      //   next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+      //   next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      // }
+      // else
+      // {
+      //   RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+      //   return;
+      // }
+
+      next_room_x_ = room_1_pre_pick_x_;
+      next_room_y_ = room_1_pre_pick_y_;
+      next_room_z_ = room_1_pre_pick_z_;
+      next_room_rot_x_ = room_1_pre_pick_rot_x_;
+      next_room_rot_y_ = room_1_pre_pick_rot_y_;
+      next_room_rot_z_ = room_1_pre_pick_rot_z_;
+      next_room_rot_w_ = room_1_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
+      go_from_second_to_next_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;
+
+      if (goFromSecondToNextRoomServiceCb(go_from_second_to_next_srv_request, go_from_second_to_next_srv_response))
       {
-        next_room_x_ = msg->data.data.endLocation.position[0];
-        next_room_y_ = msg->data.data.endLocation.position[1];
-        next_room_z_ = msg->data.data.endLocation.position[2];
-        next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
-        next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
-        next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
-        next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+        if (go_from_second_to_next_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_from_second_to_next_srv_response.message.c_str());
+        }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
-        return;
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
       }
+    }
+    else if (message == go_to_room_3_)
+    {
+      next_room_x_ = room_3_place_x_;
+      next_room_y_ = room_3_place_y_;
+      next_room_z_ = room_3_place_z_;
+      next_room_rot_x_ = room_3_place_rot_x_;
+      next_room_rot_y_ = room_3_place_rot_y_;
+      next_room_rot_z_ = room_3_place_rot_z_;
+      next_room_rot_w_ = room_3_place_rot_w_;
 
+      odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
+      go_from_second_to_next_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;
+
+      if (goFromSecondToNextRoomServiceCb(go_from_second_to_next_srv_request, go_from_second_to_next_srv_response))
+      {
+        if (go_from_second_to_next_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_from_second_to_next_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
+      }
+    }
+    else if (message == go_to_home_room_)
+    {
+      next_room_x_ = home_pre_pick_x_;
+      next_room_y_ = home_pre_pick_y_;
+      next_room_z_ = home_pre_pick_z_;
+      next_room_rot_x_ = home_pre_pick_rot_x_;
+      next_room_rot_y_ = home_pre_pick_rot_y_;
+      next_room_rot_z_ = home_pre_pick_rot_z_;
+      next_room_rot_w_ = home_pre_pick_rot_w_;
+    
       odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
       go_from_second_to_next_srv_request.input = message;
       odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;

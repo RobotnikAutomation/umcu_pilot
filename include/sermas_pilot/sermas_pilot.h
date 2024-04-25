@@ -186,6 +186,7 @@ protected:
   string go_to_room_1_;
   string go_to_room_2_;
   string go_to_room_3_;
+  string go_to_home_room_;
   string release_and_home_;
   string bring_rack_home_;
 
