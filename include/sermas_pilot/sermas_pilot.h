@@ -63,8 +63,11 @@ protected:
   ros::Publisher robot_status_pub_;
   string robot_status_pub_name_;
   odin_msgs::RobotStatus robot_status_;
+
   ros::Publisher robot_result_pub_;
   string robot_result_pub_name_;
+  odin_msgs::RobotTask robot_result_;
+
   ros::Publisher state_machine_state_pub_;
   std_msgs::String current_state_data_;
 

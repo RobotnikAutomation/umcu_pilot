@@ -135,6 +135,9 @@ void SermasPilot::rosPublish()
     // robot_status.data.pose = pose_;
     robot_status_pub_.publish(robot_status_);
 
+    robot_result_.data.taskStatus = current_state_;
+    robot_result_pub_.publish(robot_result_);
+
     current_state_data_.data = current_state_;
     state_machine_state_pub_.publish(current_state_data_);
   }
@@ -149,6 +152,10 @@ void SermasPilot::initState()
 
   navigation_command_sent_ = false;
   sequence_sent_ = false;
+
+  robot_result_.data.user = "robot";
+  robot_result_.data.taskResult = "none";
+  robot_result_.data.taskType = "none";
 
   // robot_status_.data.battery = battery_status_;
   // robot_status_.data.status = current_state_;
@@ -284,6 +291,8 @@ void SermasPilot::changeState(const string &next_state, const string &additional
 
   navigation_command_sent_ = false;
   sequence_sent_ = false;
+
+  robot_result_.data.taskResult = "none";
 }
 /* State Machine !*/
 
@@ -1344,6 +1353,8 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 
 void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 {
+  robot_result_.data.taskType = msg->data.data.taskType;
+
   // 1_WAITING_FOR_MISSION --> 2_CHECKING_ELEVATOR
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
@@ -1701,6 +1712,8 @@ void SermasPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::Cons
 //! Action Callbacks
 void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result)
 {
+  robot_result_.data.taskResult = state.toString();
+
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     std_srvs::TriggerRequest move_base_srv_request;
