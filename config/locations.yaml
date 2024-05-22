@@ -64,13 +64,13 @@ locations:
       rot_w: 0.981389288884
   room_3: # Next to surgery
     place:
-      x: 42.4468183556
-      y: 12.42894246403
+      x: 32.5858847388
+      y: 13.1203888284
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: -0.974697693187
-      rot_w: 0.223527194981
+      rot_z: -0.554330196531
+      rot_w: 0.832296842007
   docking_stations:
     home: # Surgery (corridor so far)
       x: 26.0332752762
