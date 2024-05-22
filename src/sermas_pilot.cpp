@@ -61,8 +61,8 @@ int SermasPilot::rosSetup()
 
   /*** ROS Stuff ***/
   //! Publishers
-  robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 10);
-  robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 10);
+  robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 1);
+  robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 1);
   state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/sermas_pilot/state_machine", 10);
 
   //! Subscribers
@@ -76,7 +76,7 @@ int SermasPilot::rosSetup()
   addTopicsHealth(&elevator_sub_, elevator_sub_name_, 50.0, not_required);
   battery_sub_ = nh_.subscribe<robotnik_msgs::BatteryStatus>(battery_sub_name_, 10, &SermasPilot::batterySubCb, this);
   addTopicsHealth(&battery_sub_, battery_sub_name_, 50.0, not_required);
-  pose_sub_ = nh_.subscribe<>(pose_sub_name_, 10, &SermasPilot::poseSubCb, this);
+  pose_sub_ = nh_.subscribe<geometry_msgs::PoseWithCovarianceStamped>(pose_sub_name_, 10, &SermasPilot::poseSubCb, this);
   addTopicsHealth(&pose_sub_, pose_sub_name_, 50.0, not_required);
   move_base_feedback_sub_ = nh_.subscribe<move_base_msgs::MoveBaseActionFeedback>("/robot/move_base/feedback", 10, &SermasPilot::moveBaseFeedbackCb, this);
   addTopicsHealth(&move_base_feedback_sub_, "/robot/move_base/feedback", 50.0, not_required);
@@ -135,7 +135,7 @@ void SermasPilot::rosPublish()
     // robot_status_.data.battery = battery_status_;
     robot_status_.data.status = current_state_;
     // robot_status.data.pose = pose_;
-    robot_status_pub_.publish(robot_status_);
+    // robot_status_pub_.publish(robot_status_);
 
     robot_result_.data.taskStatus = current_state_;
     robot_result_pub_.publish(robot_result_);
