@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sermas_pilot)
+project(umcu_pilot)
 
 add_compile_options(-std=c++11)
 
@@ -42,7 +42,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME} src/sermas_pilot.cpp)
+add_library(${PROJECT_NAME} src/umcu_pilot.cpp)
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library target against
@@ -51,11 +51,11 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ## Declare a C++ executable
-add_executable(sermas_pilot_node src/sermas_pilot_node.cpp)
-add_dependencies(sermas_pilot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(umcu_pilot_node src/umcu_pilot_node.cpp)
+add_dependencies(umcu_pilot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a executable target against
-target_link_libraries(sermas_pilot_node
+target_link_libraries(umcu_pilot_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
 )
@@ -65,7 +65,7 @@ target_link_libraries(sermas_pilot_node
 #############
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} sermas_pilot_node
+install(TARGETS ${PROJECT_NAME} umcu_pilot_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

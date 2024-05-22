@@ -1,26 +1,26 @@
-#include <sermas_pilot/sermas_pilot.h>
+#include <umcu_pilot/umcu_pilot.h>
 
-SermasPilot::SermasPilot(ros::NodeHandle h) : rcomponent::RComponent(h)
+UmcuPilot::UmcuPilot(ros::NodeHandle h) : rcomponent::RComponent(h)
 {
   component_name.assign(pnh_.getNamespace());
   rosReadParams();
 }
 
-SermasPilot::~SermasPilot()
+UmcuPilot::~UmcuPilot()
 {
 }
 
-void SermasPilot::rosReadParams()
+void UmcuPilot::rosReadParams()
 {
   bool required = true;
   bool not_required = false;
 
   readParam(pnh_, "desired_freq", desired_freq_, 10.0, not_required);
-  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/sermas_pilot/robot_status", required);
-  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/sermas_pilot/robot_result", required);
-  readParam(pnh_, "rtls_sub", rtls_sub_name_, "/sermas_pilot/rtls", required);
-  readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/sermas_pilot/smartbox", required);
-  readParam(pnh_, "hmi_sub", hmi_sub_name_, "/sermas_pilot/hmi", required);
+  readParam(pnh_, "robot_status_pub", robot_status_pub_name_, "/umcu_pilot/robot_status", required);
+  readParam(pnh_, "robot_result_pub", robot_result_pub_name_, "/umcu_pilot/robot_result", required);
+  readParam(pnh_, "rtls_sub", rtls_sub_name_, "/umcu_pilot/rtls", required);
+  readParam(pnh_, "smartbox_sub", smartbox_sub_name_, "/umcu_pilot/smartbox", required);
+  readParam(pnh_, "hmi_sub", hmi_sub_name_, "/umcu_pilot/hmi", required);
   readParam(pnh_, "elevator_sub", elevator_sub_name_, "/robot/robotnik_base_control/elevator_status", required);
   readParam(pnh_, "battery_sub", battery_sub_name_, "/robot/battery_estimator/data", required);
   readParam(pnh_, "pose_sub", pose_sub_name_, "/robot/amcl_pose", required);
@@ -52,7 +52,7 @@ void SermasPilot::rosReadParams()
   }
 }
 
-int SermasPilot::rosSetup()
+int UmcuPilot::rosSetup()
 {
   RComponent::rosSetup();
 
@@ -63,54 +63,54 @@ int SermasPilot::rosSetup()
   //! Publishers
   robot_status_pub_ = pnh_.advertise<odin_msgs::RobotStatus>(robot_status_pub_name_, 1);
   robot_result_pub_ = pnh_.advertise<odin_msgs::RobotTask>(robot_result_pub_name_, 1);
-  state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/sermas_pilot/state_machine", 10);
+  state_machine_state_pub_ = pnh_.advertise<std_msgs::String>("/umcu_pilot/state_machine", 10);
 
   //! Subscribers
-  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &SermasPilot::smartboxSubCb, this);
+  smartbox_sub_ = nh_.subscribe<odin_msgs::SmartboxStatus>(smartbox_sub_name_, 10, &UmcuPilot::smartboxSubCb, this);
   addTopicsHealth(&smartbox_sub_, smartbox_sub_name_, 50.0, not_required);
-  rtls_sub_ = nh_.subscribe<odin_msgs::RTLSBase>(rtls_sub_name_, 10, &SermasPilot::rtlsSubCb, this);
+  rtls_sub_ = nh_.subscribe<odin_msgs::RTLSBase>(rtls_sub_name_, 10, &UmcuPilot::rtlsSubCb, this);
   addTopicsHealth(&rtls_sub_, rtls_sub_name_, 50.0, not_required);
-  hmi_sub_ = nh_.subscribe<odin_msgs::HMIBase>(hmi_sub_name_, 10, &SermasPilot::hmiSubCb, this);
+  hmi_sub_ = nh_.subscribe<odin_msgs::HMIBase>(hmi_sub_name_, 10, &UmcuPilot::hmiSubCb, this);
   addTopicsHealth(&hmi_sub_, hmi_sub_name_, 50.0, not_required);
-  elevator_sub_ = nh_.subscribe<robotnik_msgs::ElevatorStatus>(elevator_sub_name_, 10, &SermasPilot::elevatorSubCb, this);
+  elevator_sub_ = nh_.subscribe<robotnik_msgs::ElevatorStatus>(elevator_sub_name_, 10, &UmcuPilot::elevatorSubCb, this);
   addTopicsHealth(&elevator_sub_, elevator_sub_name_, 50.0, not_required);
-  battery_sub_ = nh_.subscribe<robotnik_msgs::BatteryStatus>(battery_sub_name_, 10, &SermasPilot::batterySubCb, this);
+  battery_sub_ = nh_.subscribe<robotnik_msgs::BatteryStatus>(battery_sub_name_, 10, &UmcuPilot::batterySubCb, this);
   addTopicsHealth(&battery_sub_, battery_sub_name_, 50.0, not_required);
-  pose_sub_ = nh_.subscribe<geometry_msgs::PoseWithCovarianceStamped>(pose_sub_name_, 10, &SermasPilot::poseSubCb, this);
+  pose_sub_ = nh_.subscribe<geometry_msgs::PoseWithCovarianceStamped>(pose_sub_name_, 10, &UmcuPilot::poseSubCb, this);
   addTopicsHealth(&pose_sub_, pose_sub_name_, 50.0, not_required);
-  move_base_feedback_sub_ = nh_.subscribe<move_base_msgs::MoveBaseActionFeedback>("/robot/move_base/feedback", 10, &SermasPilot::moveBaseFeedbackCb, this);
+  move_base_feedback_sub_ = nh_.subscribe<move_base_msgs::MoveBaseActionFeedback>("/robot/move_base/feedback", 10, &UmcuPilot::moveBaseFeedbackCb, this);
   addTopicsHealth(&move_base_feedback_sub_, "/robot/move_base/feedback", 50.0, not_required);
 
   //! Service Servers
   // _Pick Up_ Mission
-  pickup_mission_received_srv_ = pnh_.advertiseService("/sermas_pilot/pickup_mission_received", &SermasPilot::pickupMissionReceivedServiceCb, this);
-  elevator_down_srv_ = pnh_.advertiseService("/sermas_pilot/elevator_down", &SermasPilot::elevatorDownServiceCb, this);
-  rack_position_received_srv_ = pnh_.advertiseService("/sermas_pilot/rack_position_received", &SermasPilot::rackPositionReceivedServiceCb, this);
-  correct_position_srv_ = pnh_.advertiseService("/sermas_pilot/correct_position", &SermasPilot::correctPositionServiceCb, this);
-  arrived_at_rack_srv_ = pnh_.advertiseService("/sermas_pilot/arrived_at_rack", &SermasPilot::arrivedAtRackServiceCb, this);
-  rack_picked_srv_ = pnh_.advertiseService("/sermas_pilot/rack_picked", &SermasPilot::rackPickedServiceCb, this);
-  go_from_first_to_second_room_srv_ = pnh_.advertiseService("/sermas_pilot/go_from_first_to_second_room", &SermasPilot::goFromFirstToSecondRoomServiceCb, this);
-  arrived_at_second_room_srv_ = pnh_.advertiseService("/sermas_pilot/arrived_at_second_room", &SermasPilot::arrivedAtSecondRoomServiceCb, this);
-  release_rack_srv_ = pnh_.advertiseService("/sermas_pilot/release_rack", &SermasPilot::releaseRackServiceCb, this);
-  go_from_second_to_next_room_srv_ = pnh_.advertiseService("/sermas_pilot/go_from_second_to_next_room", &SermasPilot::goFromSecondToNextRoomServiceCb, this);
-  arrived_at_next_room_srv_ = pnh_.advertiseService("/sermas_pilot/arrived_at_next_room", &SermasPilot::arrivedAtNextRoomServiceCb, this);
-  go_to_next_room_srv_ = pnh_.advertiseService("/sermas_pilot/go_to_next_room", &SermasPilot::goToNextRoomServiceCb, this);
-  rack_released_srv_ = pnh_.advertiseService("/sermas_pilot/rack_released", &SermasPilot::rackReleasedServiceCb, this);
-  rack_homed_srv_ = pnh_.advertiseService("/sermas_pilot/rack_homed", &SermasPilot::rackHomedServiceCb, this);
-  rack_placed_srv_ = pnh_.advertiseService("/sermas_pilot/rack_placed", &SermasPilot::rackPlacedServiceCb, this);
-  arrived_at_home_srv_ = pnh_.advertiseService("/sermas_pilot/arrived_at_home", &SermasPilot::arrivedAtHomeServiceCb, this);
+  pickup_mission_received_srv_ = pnh_.advertiseService("/umcu_pilot/pickup_mission_received", &UmcuPilot::pickupMissionReceivedServiceCb, this);
+  elevator_down_srv_ = pnh_.advertiseService("/umcu_pilot/elevator_down", &UmcuPilot::elevatorDownServiceCb, this);
+  rack_position_received_srv_ = pnh_.advertiseService("/umcu_pilot/rack_position_received", &UmcuPilot::rackPositionReceivedServiceCb, this);
+  correct_position_srv_ = pnh_.advertiseService("/umcu_pilot/correct_position", &UmcuPilot::correctPositionServiceCb, this);
+  arrived_at_rack_srv_ = pnh_.advertiseService("/umcu_pilot/arrived_at_rack", &UmcuPilot::arrivedAtRackServiceCb, this);
+  rack_picked_srv_ = pnh_.advertiseService("/umcu_pilot/rack_picked", &UmcuPilot::rackPickedServiceCb, this);
+  go_from_first_to_second_room_srv_ = pnh_.advertiseService("/umcu_pilot/go_from_first_to_second_room", &UmcuPilot::goFromFirstToSecondRoomServiceCb, this);
+  arrived_at_second_room_srv_ = pnh_.advertiseService("/umcu_pilot/arrived_at_second_room", &UmcuPilot::arrivedAtSecondRoomServiceCb, this);
+  release_rack_srv_ = pnh_.advertiseService("/umcu_pilot/release_rack", &UmcuPilot::releaseRackServiceCb, this);
+  go_from_second_to_next_room_srv_ = pnh_.advertiseService("/umcu_pilot/go_from_second_to_next_room", &UmcuPilot::goFromSecondToNextRoomServiceCb, this);
+  arrived_at_next_room_srv_ = pnh_.advertiseService("/umcu_pilot/arrived_at_next_room", &UmcuPilot::arrivedAtNextRoomServiceCb, this);
+  go_to_next_room_srv_ = pnh_.advertiseService("/umcu_pilot/go_to_next_room", &UmcuPilot::goToNextRoomServiceCb, this);
+  rack_released_srv_ = pnh_.advertiseService("/umcu_pilot/rack_released", &UmcuPilot::rackReleasedServiceCb, this);
+  rack_homed_srv_ = pnh_.advertiseService("/umcu_pilot/rack_homed", &UmcuPilot::rackHomedServiceCb, this);
+  rack_placed_srv_ = pnh_.advertiseService("/umcu_pilot/rack_placed", &UmcuPilot::rackPlacedServiceCb, this);
+  arrived_at_home_srv_ = pnh_.advertiseService("/umcu_pilot/arrived_at_home", &UmcuPilot::arrivedAtHomeServiceCb, this);
 
   // _Recharge_ Mission
-  recharge_mission_received_srv_ = pnh_.advertiseService("/sermas_pilot/recharge_mission_received", &SermasPilot::rechargeMissionReceivedServiceCb, this);
-  goal_calculated_srv_ = pnh_.advertiseService("/sermas_pilot/goal_calculated", &SermasPilot::goalCalculatedServiceCb, this);
-  rack_charged_srv_ = pnh_.advertiseService("/sermas_pilot/rack_charged", &SermasPilot::rackChargedServiceCb, this);
+  recharge_mission_received_srv_ = pnh_.advertiseService("/umcu_pilot/recharge_mission_received", &UmcuPilot::rechargeMissionReceivedServiceCb, this);
+  goal_calculated_srv_ = pnh_.advertiseService("/umcu_pilot/goal_calculated", &UmcuPilot::goalCalculatedServiceCb, this);
+  rack_charged_srv_ = pnh_.advertiseService("/umcu_pilot/rack_charged", &UmcuPilot::rackChargedServiceCb, this);
 
   //! Service Clients
-  // rack_position_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/sermas_pilot/rack_position_received");
-  // goal_calculated_client_ = pnh_.serviceClient<std_srvs::Trigger>("/sermas_pilot/goal_calculated");
-  // arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/sermas_pilot/arrived_at_rack");
-  // rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/sermas_pilot/rack_picked");
-  // arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/sermas_pilot/arrived_at_home");
+  // rack_position_received_client_ = pnh_.serviceClient<std_srvs::Trigger>("/umcu_pilot/rack_position_received");
+  // goal_calculated_client_ = pnh_.serviceClient<std_srvs::Trigger>("/umcu_pilot/goal_calculated");
+  // arrived_at_rack_client_ = pnh_.serviceClient<std_srvs::Trigger>("/umcu_pilot/arrived_at_rack");
+  // rack_picked_client_ = pnh_.serviceClient<std_srvs::Trigger>("/umcu_pilot/rack_picked");
+  // arrived_at_home_client_ = pnh_.serviceClient<std_srvs::Trigger>("/umcu_pilot/arrived_at_home");
 
   //! Action Clients
   move_base_ac_ = std::make_shared<actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>>(pnh_, "/robot/move_base", true);
@@ -120,12 +120,12 @@ int SermasPilot::rosSetup()
   return rcomponent::OK;
 }
 
-int SermasPilot::rosShutdown()
+int UmcuPilot::rosShutdown()
 {
   return RComponent::rosShutdown();
 }
 
-void SermasPilot::rosPublish()
+void UmcuPilot::rosPublish()
 {
   RComponent::rosPublish();
 
@@ -145,7 +145,7 @@ void SermasPilot::rosPublish()
   }
 }
 
-void SermasPilot::initState()
+void UmcuPilot::initState()
 {
   RComponent::initState();
 
@@ -170,7 +170,7 @@ void SermasPilot::initState()
   switchToState(robotnik_msgs::State::STANDBY_STATE);
 }
 
-void SermasPilot::standbyState()
+void UmcuPilot::standbyState()
 {
   if (checkTopicsHealth() == false)
   {
@@ -182,7 +182,7 @@ void SermasPilot::standbyState()
   }
 }
 
-void SermasPilot::readyState()
+void UmcuPilot::readyState()
 {
   if (checkTopicsHealth() == false)
   {
@@ -192,7 +192,7 @@ void SermasPilot::readyState()
   runRobotStateMachine();
 }
 
-void SermasPilot::emergencyState()
+void UmcuPilot::emergencyState()
 {
   if (checkTopicsHealth() == true)
   {
@@ -200,13 +200,13 @@ void SermasPilot::emergencyState()
   }
 }
 
-void SermasPilot::failureState()
+void UmcuPilot::failureState()
 {
   RComponent::failureState();
 }
 
 /*** State Machine ***/
-void SermasPilot::runRobotStateMachine()
+void UmcuPilot::runRobotStateMachine()
 {
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
@@ -282,7 +282,7 @@ void SermasPilot::runRobotStateMachine()
   }
 }
 
-void SermasPilot::changeState(const string &next_state, const string &additional_information)
+void UmcuPilot::changeState(const string &next_state, const string &additional_information)
 {
   RCOMPONENT_WARN_STREAM(additional_information);
   RCOMPONENT_WARN_STREAM(current_state_ << " --> " << next_state);
@@ -302,14 +302,14 @@ void SermasPilot::changeState(const string &next_state, const string &additional
 
 //! 1_WAITING_FOR_MISSION
 // The RB-1 waits for a mission in the HOME ROOM
-void SermasPilot::waitingForMissionState()
+void UmcuPilot::waitingForMissionState()
 {
   RCOMPONENT_INFO_STREAM("1_WAITING_FOR_MISSION");
 }
 
 //! 2_CHECKING_ELEVATOR, or 16_CHECKING_ELEVATOR
 // The RB-1 checks the elevator position (up or down)
-void SermasPilot::checkingElevatorState()
+void UmcuPilot::checkingElevatorState()
 {
   if (current_state_ == "2_CHECKING_ELEVATOR")
   {
@@ -323,7 +323,7 @@ void SermasPilot::checkingElevatorState()
 
 //! 3_GETTING_RACK_POSITION, or 17_GETTING_RACK_POSITION
 // The RB-1 gets the approximate rack position from the RTLS
-void SermasPilot::gettingRackPositionState()
+void UmcuPilot::gettingRackPositionState()
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
@@ -337,7 +337,7 @@ void SermasPilot::gettingRackPositionState()
 
 //! 4_CHECKING_RACK_POSITION
 // The RB-1 checks if the rack is in the correct docking station (in ROOM 1)
-void SermasPilot::checkingRackPositionState()
+void UmcuPilot::checkingRackPositionState()
 {
   RCOMPONENT_INFO_STREAM("4_CHECKING_RACK_POSITION");
 
@@ -368,13 +368,13 @@ void SermasPilot::checkingRackPositionState()
   }
   else
   {
-    RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/correct_position");
+    RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/correct_position");
   }
 }
 
 //! 5_NAVIGATING_TO_RACK, or 19_NAVIGATING_TO_RACK
 // The RB-1 navigates to the _a priori_ known pre-pick position of the rack
-void SermasPilot::navigatingToRackState()
+void UmcuPilot::navigatingToRackState()
 {
   // If we are in the 5_NAVIGATING_TO_RACK state, we are navigating to the rack in the HOME ROOM
   if (current_state_ == "5_NAVIGATING_TO_RACK")
@@ -394,7 +394,7 @@ void SermasPilot::navigatingToRackState()
       move_base_goal_.target_pose.pose.orientation.y = room_1_pre_pick_rot_y_;
       move_base_goal_.target_pose.pose.orientation.z = room_1_pre_pick_rot_z_;
       move_base_goal_.target_pose.pose.orientation.w = room_1_pre_pick_rot_w_;
-      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
       navigation_command_sent_ = true;
     }
@@ -417,7 +417,7 @@ void SermasPilot::navigatingToRackState()
       move_base_goal_.target_pose.pose.orientation.y = y_orient_goal_;
       move_base_goal_.target_pose.pose.orientation.z = z_orient_goal_;
       move_base_goal_.target_pose.pose.orientation.w = w_orient_goal_;
-      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+      move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
       navigation_command_sent_ = true;
     }
@@ -426,7 +426,7 @@ void SermasPilot::navigatingToRackState()
 
 //! 6_PICKING_RACK, or 20_PICKING_RACK
 // The RB-1 picks up the rack -- which should be in the docking station
-void SermasPilot::pickingRackState()
+void UmcuPilot::pickingRackState()
 {
   if (current_state_ == "6_PICKING_RACK")
   {
@@ -443,7 +443,7 @@ void SermasPilot::pickingRackState()
 
     // TODO during pilot: Set correct command
     command_sequencer_goal_.command.command = pick_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&UmcuPilot::commandSequencerResultCb, this, _1, _2));
 
     sequence_sent_ = true;
   }
@@ -451,14 +451,14 @@ void SermasPilot::pickingRackState()
 
 //! 7_WAITING_IN_FIRST_ROOM
 // The RB-1 waits in the first room until it is told to navigate to the next room by the hospital staff
-void SermasPilot::waitingInFirstRoomState()
+void UmcuPilot::waitingInFirstRoomState()
 {
   RCOMPONENT_INFO_STREAM("7_WAITING_IN_FIRST_ROOM");
 }
 
 //! 8_NAVIGATING_TO_SECOND_ROOM
 // The RB-1 navigates to the second room
-void SermasPilot::navigatingToSecondRoomState()
+void UmcuPilot::navigatingToSecondRoomState()
 {
   RCOMPONENT_INFO_STREAM("8_NAVIGATING_TO_SECOND_ROOM");
   if (!navigation_command_sent_)
@@ -475,7 +475,7 @@ void SermasPilot::navigatingToSecondRoomState()
     move_base_goal_.target_pose.pose.orientation.y = room_2_place_rot_y_;
     move_base_goal_.target_pose.pose.orientation.z = room_2_place_rot_z_;
     move_base_goal_.target_pose.pose.orientation.w = room_2_place_rot_w_;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
   }
@@ -483,14 +483,14 @@ void SermasPilot::navigatingToSecondRoomState()
 
 //! 9_WAITING_IN_SECOND_ROOM
 // The RB-1 waits in the lab
-void SermasPilot::waitingInSecondRoomState()
+void UmcuPilot::waitingInSecondRoomState()
 {
   RCOMPONENT_INFO_STREAM("9_WAITING_IN_SECOND_ROOM");
 }
 
 //! 10_NAVIGATING_TO_NEXT_ROOM
 // The RB-1 navigates to the next room
-void SermasPilot::navigatingToNextRoomState()
+void UmcuPilot::navigatingToNextRoomState()
 {
   RCOMPONENT_INFO_STREAM("10_NAVIGATING_TO_NEXT_ROOM");
   if (!navigation_command_sent_)
@@ -507,7 +507,7 @@ void SermasPilot::navigatingToNextRoomState()
     move_base_goal_.target_pose.pose.orientation.y = next_room_rot_y_;
     move_base_goal_.target_pose.pose.orientation.z = next_room_rot_z_;
     move_base_goal_.target_pose.pose.orientation.w = next_room_rot_w_;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
   }
@@ -515,14 +515,14 @@ void SermasPilot::navigatingToNextRoomState()
 
 //! 11_WAITING_IN_NEXT_ROOM
 // The RB-1 waits in the next room
-void SermasPilot::waitingInNextRoomState()
+void UmcuPilot::waitingInNextRoomState()
 {
   RCOMPONENT_INFO_STREAM("11_WAITING_IN_NEXT_ROOM");
 }
 
 //! 12_HOMING_RACK
 // The RB-1 brings back the rack to the HOME ROOM
-void SermasPilot::homingRackState()
+void UmcuPilot::homingRackState()
 {
   RCOMPONENT_INFO_STREAM("12_HOMING_RACK");
   if (!navigation_command_sent_)
@@ -545,7 +545,7 @@ void SermasPilot::homingRackState()
     move_base_goal_.target_pose.pose.orientation.y = room_1_place_rot_y_;
     move_base_goal_.target_pose.pose.orientation.z = room_1_place_rot_z_;
     move_base_goal_.target_pose.pose.orientation.w = room_1_place_rot_w_;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
   }
@@ -553,7 +553,7 @@ void SermasPilot::homingRackState()
 
 //! 13_PLACING_RACK
 // The RB-1 places the rack
-void SermasPilot::placingRackState()
+void UmcuPilot::placingRackState()
 {
   RCOMPONENT_INFO_STREAM("13_PLACING_RACK");
   if (!sequence_sent_)
@@ -562,7 +562,7 @@ void SermasPilot::placingRackState()
 
     // TODO during pilot: Set correct command
     command_sequencer_goal_.command.command = place_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&UmcuPilot::commandSequencerResultCb, this, _1, _2));
 
     sequence_sent_ = true;
   }
@@ -570,7 +570,7 @@ void SermasPilot::placingRackState()
 
 //! 14_RELEASING_RACK, or 22_RELEASING_RACK
 // The RB-1 releases the rack
-void SermasPilot::releasingRackState()
+void UmcuPilot::releasingRackState()
 {
   if (current_state_ == "14_RELEASING_RACK")
   {
@@ -587,7 +587,7 @@ void SermasPilot::releasingRackState()
 
     // TODO during pilot: Set correct command
     command_sequencer_goal_.command.command = release_sequence_;
-    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&SermasPilot::commandSequencerResultCb, this, _1, _2));
+    command_sequencer_ac_->sendGoal(command_sequencer_goal_, boost::bind(&UmcuPilot::commandSequencerResultCb, this, _1, _2));
 
     sequence_sent_ = true;
   }
@@ -595,7 +595,7 @@ void SermasPilot::releasingRackState()
 
 //! 15_NAVIGATING_TO_HOME, or 23_NAVIGATING_TO_HOME
 // The RB-1 navigates to the HOME ROOM
-void SermasPilot::navigatingToHomeState()
+void UmcuPilot::navigatingToHomeState()
 {
   if (current_state_ == "15_NAVIGATING_TO_HOME")
   {
@@ -620,7 +620,7 @@ void SermasPilot::navigatingToHomeState()
     move_base_goal_.target_pose.pose.orientation.y = home_robot_rot_y_;
     move_base_goal_.target_pose.pose.orientation.z = home_robot_rot_z_;
     move_base_goal_.target_pose.pose.orientation.w = home_robot_rot_w_;
-    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&SermasPilot::moveBaseResultCb, this, _1, _2));
+    move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
     navigation_command_sent_ = true;
   }
@@ -628,7 +628,7 @@ void SermasPilot::navigatingToHomeState()
 
 //! 18_CALCULATING_GOAL
 // The RB-1 calculates which is the closest rack goal
-void SermasPilot::calculatingGoalState()
+void UmcuPilot::calculatingGoalState()
 {
   RCOMPONENT_INFO_STREAM("18_CALCULATING_GOAL");
 
@@ -683,13 +683,13 @@ void SermasPilot::calculatingGoalState()
   }
   else
   {
-    RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/goal_calculated");
+    RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/goal_calculated");
   }
 }
 
 //! 21_CHARGING_RACK
 // The RB-1 is charging the rack
-void SermasPilot::chargingRackState()
+void UmcuPilot::chargingRackState()
 {
   RCOMPONENT_INFO_STREAM("21_CHARGING_RACK");
 }
@@ -698,7 +698,7 @@ void SermasPilot::chargingRackState()
 /*** Transitions ***/
 // _Pick Up_ Mission
 //! 1_WAITING_FOR_MISSION --> 2_CHECKING_ELEVATOR
-bool SermasPilot::pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
@@ -717,7 +717,7 @@ bool SermasPilot::pickupMissionReceivedServiceCb(std_srvs::Trigger::Request &req
 }
 
 //! 2_CHECKING_ELEVATOR --> 3_GETTING_RACK_POSITION, or 16_CHECKING_ELEVATOR --> 17_GETTING_RACK_POSITION
-bool SermasPilot::elevatorDownServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
+bool UmcuPilot::elevatorDownServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
   if (current_state_ == "2_CHECKING_ELEVATOR")
   {
@@ -761,7 +761,7 @@ bool SermasPilot::elevatorDownServiceCb(std_srvs::SetBool::Request &request, std
 }
 
 //! 3_GETTING_RACK_POSITION --> 4_CHECKING_RACK_POSITION, or 17_GETTING_RACK_POSITION --> 18_CALCULATING_GOAL
-bool SermasPilot::rackPositionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackPositionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
@@ -787,7 +787,7 @@ bool SermasPilot::rackPositionReceivedServiceCb(std_srvs::Trigger::Request &requ
 }
 
 //! 4_CHECKING_RACK_POSITION --> 3_GETTING_RACK_POSITION or 5_NAVIGATING_TO_RACK
-bool SermasPilot::correctPositionServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
+bool UmcuPilot::correctPositionServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
   if (current_state_ == "4_CHECKING_RACK_POSITION")
   {
@@ -816,7 +816,7 @@ bool SermasPilot::correctPositionServiceCb(std_srvs::SetBool::Request &request, 
 }
 
 //! 5_NAVIGATING_TO_RACK --> 6_PICKING_RACK, or 19_NAVIGATING_TO_RACK --> 20_PICKING_RACK
-bool SermasPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "5_NAVIGATING_TO_RACK")
   {
@@ -842,7 +842,7 @@ bool SermasPilot::arrivedAtRackServiceCb(std_srvs::Trigger::Request &request, st
 }
 
 //! 6_PICKING_RACK --> 7_WAITING_IN_FIRST_ROOM, or 20_PICKING_RACK --> 21_CHARGING_RACK
-bool SermasPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "6_PICKING_RACK")
   {
@@ -868,7 +868,7 @@ bool SermasPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_s
 }
 
 //! 7_WAITING_IN_FIRST_ROOM --> 8_NAVIGATING_TO_SECOND_ROOM
-bool SermasPilot::goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "7_WAITING_IN_FIRST_ROOM")
   {
@@ -887,7 +887,7 @@ bool SermasPilot::goFromFirstToSecondRoomServiceCb(std_srvs::Trigger::Request &r
 }
 
 //! 8_NAVIGATING_TO_SECOND_ROOM --> 9_WAITING_IN_SECOND_ROOM
-bool SermasPilot::arrivedAtSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::arrivedAtSecondRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "8_NAVIGATING_TO_SECOND_ROOM")
   {
@@ -906,7 +906,7 @@ bool SermasPilot::arrivedAtSecondRoomServiceCb(std_srvs::Trigger::Request &reque
 }
 
 //! 9_WAITING_IN_SECOND_ROOM or 11_WAITING_IN_NEXT_ROOM --> 12_HOMING_RACK or 14_RELEASING_RACK
-bool SermasPilot::releaseRackServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
+bool UmcuPilot::releaseRackServiceCb(std_srvs::SetBool::Request &request, std_srvs::SetBool::Response &response)
 {
   if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
   {
@@ -952,7 +952,7 @@ bool SermasPilot::releaseRackServiceCb(std_srvs::SetBool::Request &request, std_
 }
 
 //! 9_WAITING_IN_SECOND_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-bool SermasPilot::goFromSecondToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
+bool UmcuPilot::goFromSecondToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
 {
   if (current_state_ == "9_WAITING_IN_SECOND_ROOM")
   {
@@ -971,7 +971,7 @@ bool SermasPilot::goFromSecondToNextRoomServiceCb(odin_msgs::StringTrigger::Requ
 }
 
 //! 10_NAVIGATING_TO_NEXT_ROOM --> 11_WAITING_IN_NEXT_ROOM
-bool SermasPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "10_NAVIGATING_TO_NEXT_ROOM")
   {
@@ -990,7 +990,7 @@ bool SermasPilot::arrivedAtNextRoomServiceCb(std_srvs::Trigger::Request &request
 }
 
 //! 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-bool SermasPilot::goToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
+bool UmcuPilot::goToNextRoomServiceCb(odin_msgs::StringTrigger::Request &request, odin_msgs::StringTrigger::Response &response)
 {
   if (current_state_ == "11_WAITING_IN_NEXT_ROOM")
   {
@@ -1009,7 +1009,7 @@ bool SermasPilot::goToNextRoomServiceCb(odin_msgs::StringTrigger::Request &reque
 }
 
 //! 14_RELEASING_RACK --> 15_NAVIGATING_TO_HOME, or 22_RELEASING_RACK to 23_NAVIGATING_TO_HOME
-bool SermasPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "14_RELEASING_RACK")
   {
@@ -1035,7 +1035,7 @@ bool SermasPilot::rackReleasedServiceCb(std_srvs::Trigger::Request &request, std
 }
 
 //! 12_HOMING_RACK --> 13_PLACING_RACK
-bool SermasPilot::rackHomedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackHomedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "12_HOMING_RACK")
   {
@@ -1054,7 +1054,7 @@ bool SermasPilot::rackHomedServiceCb(std_srvs::Trigger::Request &request, std_sr
 }
 
 //! 13_PLACING_RACK --> 15_NAVIGATING_TO_HOME
-bool SermasPilot::rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "13_PLACING_RACK")
   {
@@ -1073,7 +1073,7 @@ bool SermasPilot::rackPlacedServiceCb(std_srvs::Trigger::Request &request, std_s
 }
 
 //! 15_NAVIGATING_TO_HOME or 23_NAVIGATING_TO_HOME --> 1_WAITING_FOR_MISSION
-bool SermasPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "15_NAVIGATING_TO_HOME")
   {
@@ -1100,7 +1100,7 @@ bool SermasPilot::arrivedAtHomeServiceCb(std_srvs::Trigger::Request &request, st
 
 // _Recharge_ Mission
 //! 1_WAITING_FOR_MISSION --> 16_CHECKING_ELEVATOR
-bool SermasPilot::rechargeMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rechargeMissionReceivedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
@@ -1119,7 +1119,7 @@ bool SermasPilot::rechargeMissionReceivedServiceCb(std_srvs::Trigger::Request &r
 }
 
 //! 18_CALCULATING_GOAL --> 19_NAVIGATING_TO_RACK
-bool SermasPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "18_CALCULATING_GOAL")
   {
@@ -1138,7 +1138,7 @@ bool SermasPilot::goalCalculatedServiceCb(std_srvs::Trigger::Request &request, s
 }
 
 //! 21_CHARGING_RACK --> 22_RELEASING_RACK
-bool SermasPilot::rackChargedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
+bool UmcuPilot::rackChargedServiceCb(std_srvs::Trigger::Request &request, std_srvs::Trigger::Response &response)
 {
   if (current_state_ == "21_CHARGING_RACK")
   {
@@ -1160,7 +1160,7 @@ bool SermasPilot::rackChargedServiceCb(std_srvs::Trigger::Request &request, std_
 /* Callbacks */
 //! Subscription Callbacks
 // 1_WAITING_FOR_MISSION --> 16_CHECKING_ELEVATOR
-void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
+void UmcuPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 {
   if (current_state_ == "1_WAITING_FOR_MISSION")
   {
@@ -1184,7 +1184,7 @@ void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/recharge_mission_received");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/recharge_mission_received");
       }
     }
   }
@@ -1210,7 +1210,7 @@ void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_charged");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_charged");
       }
     }
   }
@@ -1218,7 +1218,7 @@ void SermasPilot::smartboxSubCb(const odin_msgs::SmartboxStatus::ConstPtr &msg)
 }
 
 // 2_CHECKING_ELEVATOR --> 3_GETTING_RACK_POSITION, or 16_CHECKING_ELEVATOR --> 17_GETTING_RACK_POSITION
-void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg)
+void UmcuPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg)
 {
   if (current_state_ == "2_CHECKING_ELEVATOR")
   {
@@ -1245,7 +1245,7 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/elevator_down");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/elevator_down");
       }
     }
     else if (message == "up")
@@ -1279,7 +1279,7 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/elevator_down");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/elevator_down");
       }
     }
     else if (message == "up")
@@ -1292,7 +1292,7 @@ void SermasPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &m
 }
 
 // 3_GETTING_RACK_POSITION --> 4_CHECKING_RACK_POSITION, or 17_GETTING_RACK_POSITION --> 18_CALCULATING_GOAL
-void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
+void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
@@ -1318,7 +1318,7 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_position_received");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_position_received");
       }
     }
   }
@@ -1346,14 +1346,14 @@ void SermasPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_position_received");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_position_received");
       }
     }
   }
   tickTopicsHealth(rtls_sub_name_);
 }
 
-void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
+void UmcuPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
 {
   // 1_WAITING_FOR_MISSION --> 2_CHECKING_ELEVATOR
   if (current_state_ == "1_WAITING_FOR_MISSION")
@@ -1380,7 +1380,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/pickup_mission_received");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/pickup_mission_received");
       }
     }
   }
@@ -1427,7 +1427,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_first_to_second_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_first_to_second_room");
       }
     }
   }
@@ -1483,7 +1483,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_second_to_next_room");
       }
     }
     else if (message == go_to_room_3_)
@@ -1513,7 +1513,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_second_to_next_room");
       }
     }
     else if (message == go_to_home_room_)
@@ -1543,7 +1543,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_from_second_to_next_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_second_to_next_room");
       }
     }
 
@@ -1569,7 +1569,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/release_rack");
       }
     }
 
@@ -1595,7 +1595,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/release_rack");
       }
     }
   }
@@ -1645,7 +1645,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/go_to_next_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_to_next_room");
       }
     }
 
@@ -1671,7 +1671,7 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/release_rack");
       }
     }
 
@@ -1697,34 +1697,34 @@ void SermasPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/release_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/release_rack");
       }
     }
   }
   tickTopicsHealth(hmi_sub_name_);
 }
 
-void SermasPilot::batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg)
+void UmcuPilot::batterySubCb(const robotnik_msgs::BatteryStatus::ConstPtr &msg)
 {
   robot_status_.data.battery = battery_status_;
   battery_status_ = msg->level;
   tickTopicsHealth(battery_sub_name_);
 }
 
-void SermasPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
+void UmcuPilot::poseSubCb(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr &msg)
 {
   robot_status_.data.pose = pose_;
   pose_ = *msg;
   tickTopicsHealth(pose_sub_name_);
 }
 
-void SermasPilot::moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr &feedback)
+void UmcuPilot::moveBaseFeedbackCb(const move_base_msgs::MoveBaseActionFeedback::ConstPtr &feedback)
 {
   robot_result_.data.taskResult = statusToString(feedback->status.status);
   tickTopicsHealth("/robot/move_base/feedback");
 }
 
-std::string SermasPilot::statusToString(uint8_t status)
+std::string UmcuPilot::statusToString(uint8_t status)
 {
   switch (status)
   {
@@ -1754,7 +1754,7 @@ std::string SermasPilot::statusToString(uint8_t status)
 }
 
 //! Action Callbacks
-void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result)
+void UmcuPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state, const move_base_msgs::MoveBaseResultConstPtr &result)
 {
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
@@ -1777,7 +1777,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_rack");
       }
     }
 
@@ -1797,7 +1797,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_rack");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_rack");
       }
     }
 
@@ -1817,7 +1817,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_second_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_second_room");
       }
     }
 
@@ -1837,7 +1837,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_next_room");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_next_room");
       }
     }
 
@@ -1857,7 +1857,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_homed");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_homed");
       }
     }
 
@@ -1877,7 +1877,7 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_home");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_home");
       }
     }
 
@@ -1897,13 +1897,13 @@ void SermasPilot::moveBaseResultCb(const actionlib::SimpleClientGoalState &state
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/arrived_at_home");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/arrived_at_home");
       }
     }
   }
 }
 
-void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result)
+void UmcuPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result)
 {
   if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
   {
@@ -1926,7 +1926,7 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_picked");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_picked");
       }
     }
 
@@ -1946,7 +1946,7 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_picked");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_picked");
       }
     }
 
@@ -1966,7 +1966,7 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_placed");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_placed");
       }
     }
 
@@ -1986,7 +1986,7 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_released");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_released");
       }
     }
 
@@ -2006,13 +2006,13 @@ void SermasPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalStat
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Failed to call service /sermas_pilot/rack_released");
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/rack_released");
       }
     }
   }
 }
 
-void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
+void UmcuPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
 {
   auto extractPose = [](const XmlRpc::XmlRpcValue &location, double &x, double &y, double &z,
                         double &rot_x, double &rot_y, double &rot_z, double &rot_w)
@@ -2152,7 +2152,7 @@ void SermasPilot::loadLocationParameters(XmlRpc::XmlRpcValue &locations)
   }
 }
 
-void SermasPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
+void UmcuPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
 {
   auto extractId = [&](const std::string &key, std::string &storage)
   {

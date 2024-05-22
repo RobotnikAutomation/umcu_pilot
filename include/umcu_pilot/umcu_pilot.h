@@ -1,5 +1,5 @@
-#ifndef _SERMAS_PILOT_
-#define _SERMAS_PILOT_
+#ifndef _UMCU_PILOT_
+#define _UMCU_PILOT_
 
 #include <rcomponent/rcomponent.h>
 
@@ -31,11 +31,11 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <robot_simple_command_manager_msgs/RobotSimpleCommandAction.h>
 
-class SermasPilot : public rcomponent::RComponent
+class UmcuPilot : public rcomponent::RComponent
 {
 public:
-  SermasPilot(ros::NodeHandle h);
-  ~SermasPilot() override;
+  UmcuPilot(ros::NodeHandle h);
+  ~UmcuPilot() override;
 
 protected:
   /*** RComponent Stuff ***/
@@ -185,7 +185,7 @@ protected:
   void commandSequencerResultCb(const actionlib::SimpleClientGoalState &state, const robot_simple_command_manager_msgs::RobotSimpleCommandResultConstPtr &result);
   /* ROS Stuff !*/
 
-  /*** SermasPilot Stuff ***/
+  /*** UmcuPilot Stuff ***/
   std_msgs::String status_;
   string current_state_;
   string previous_state_;
@@ -358,7 +358,7 @@ protected:
   XmlRpc::XmlRpcValue rtls_ids_;
   string rtls_id_1_;
   string rtls_id_2_;
-  /* SermasPilot Stuff !*/
+  /* UmcuPilot Stuff !*/
 };
 
-#endif // _SERMAS_PILOT_
+#endif // _UMCU_PILOT_
