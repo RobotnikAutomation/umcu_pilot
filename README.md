@@ -18,9 +18,71 @@ roslaunch umcu_pilot umcu_pilot.launch
 
 This node implements the RB-1's state machine. The default state when starting the node is **`1. WAITING_FOR_MISSION`**.
 
-<p align="center">
-  <img src="docs/diagrams/umcu_pilot.drawio.svg" alt="RB-1's state machine" />
-</p>
+```mermaid
+---
+title: UMCU Pilot
+---
+stateDiagram-v2
+    s1: <b>1. WAITING_FOR_MISSION</b> <br><br> The RB-1 waits for a mission in the HOME ROOM
+    s2: <b>2. CHECKING_ELEVATOR</b> <br><br> The RB-1 checks the elevator state (up or down)
+    s3: <b>3. GETTING_RACK_POSITION</b> <br><br> The RB-1 gets the approximate rack position from the RTLS
+    s4: <b>4. CHECKING_RACK_POSITION</b> <br><br> The RB-1 checks if the rack is in the correct room (ROOM 1)
+    s5: <b>5. NAVIGATING_TO_RACK</b> <br><br> The RB-1 navigates to the a priori known position of the rack
+    s6: <b>6. PICKING_RACK</b> <br><br> The RB-1 picks up the rack – which should be in the docking station
+    s7: <b>7. WAITING_IN_FIRST_ROOM</b> <br><br> The RB-1 waits in the first room until it is told to navigate to the next room by the hospital staff
+    s8: <b>8. NAVIGATING_TO_SECOND_ROOM</b> <br><br> The RB-1 navigates to the second room
+    s9: <b>9. WAITING_IN_SECOND_ROOM</b> <br><br> The RB-1 waits in the second room while the consumables are collected
+    s10: <b>10. NAVIGATING_TO_NEXT_ROOM</b> <br><br> The RB-1 navigates to the next room
+    s11: <b>11. WAITING_IN_NEXT_ROOM</b> <br><br> The RB-1 waits in the next room
+    s12: <b>12. HOMING_RACK</b> <br><br> The RB-1 brings back the rack to the HOME ROOM
+    s13: <b>13. PLACING_RACK</b> <br><br> The RB-1 places the rack
+    s14: <b>14. RELEASING_RACK</b> <br><br> The RB-1 releases the rack
+    s15: <b>15. NAVIGATING_TO_HOME</b> <br><br> The RB-1 navigates to the HOME ROOM
+    s16: <b>16. CHECKING_ELEVATOR</b> <br><br> The RB-1 checks the elevator state (up or down)
+    s17: <b>17. GETTING_RACK_POSITION</b> <br><br> The RB-1 gets the approximate rack position from the RTLS
+    s18: <b>18. CALCULATING_GOAL</b> <br><br> The RB-1 calculates which is the closest rack goal
+    s19: <b>19. NAVIGATING_TO_RACK</b> <br><br> The RB-1 navigates to the rack
+    s20: <b>20. PICKING_RACK</b> <br><br> The RB-1 picks up the rack – which should be in the docking station
+    s21: <b>21. CHARGING_RACK</b> <br><br> The RB-1 is charging the rack
+    s22: <b>22. RELEASING_RACK</b> <br><br> The RB-1 releases the rack
+    s23: <b>23. NAVIGATING_TO_HOME</b> <br><br> The RB-1 navigates to the HOME ROOM
+    
+    s1 --> s2 : A Pick Up mission is received if we read "PICK UP RACK" from the HMI topic <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/pickup_mission_received</b>
+    state Pick_Up {
+        s2 --> s3 : The elevator is down (there is no rack on top of the RB-1) <br><br> <b>/umcu_pilot/elevator_down == True</b>
+        s3 --> s4 : The location is received from the RTLS <br> We read from kafka-odin-platform-iot-rtls-positions-mqtt <br><br> <b>/umcu_pilot/rack_position_received</b>
+        s4 --> s3 : The rack is not in the correct room <br><br> <b>/umcu_pilot/correct_position == False</b>
+        s4 --> s5 : The rack is in the correct room (e.g., the distance between the RTLS-provided coordinates and the a priori known position is below 1 m) <br><br> <b>/umcu_pilot/correct_position == True</b>
+        s5 --> s6 : The RB-1 arrives at the rack <br><br> <b>/umcu_pilot/arrived_at_rack</b>
+        s6 --> s7 : The RB-1 picks up the rack <br><br> <b>/umcu_pilot/rack_picked</b>
+        s7 --> s8 : The "GO TO ROOM X" is pressed in the HMI (e.g., "GO TO ROOM 2") <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_from_first_to_second_room</b>
+        s8 --> s9 : The RB-1 arrives at second room <br><br> <b>/umcu_pilot/arrived_at_second_room</b>
+        s9 --> s10 : The "GO TO ROOM X" is pressed in the HMI (e.g., "GO TO ROOM 3") <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_from_second_to_next_room</b>
+        s9 --> s12 : The "BRING RACK HOME" button is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/release_rack == False</b>
+        s10 --> s11 : The RB-1 arrives at the next room <br><br> <b>/umcu_pilot/arrived_at_next_room</b>
+        s11 --> s10 : The "GO TO ROOM X" is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_to_next_room</b>
+        s11 --> s12 : The "BRING RACK HOME" button is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/release_rack == False</b>
+        s11 --> s14 : The "RELEASE AND HOME" button is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/release_rack == True</b>
+        s9 --> s14 : The "RELEASE AND HOME" button is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/release_rack == True</b>
+        s12 --> s13 : The RB-1 arrives at the rack's home position in the HOME ROOM <br><br> <b>/umcu_pilot/rack_homed</b>
+        s13 --> s15 : The RB-1 places the rack <br><br> <b>/umcu_pilot/rack_placed</b>
+        s14 --> s15 : The RB-1 releases the rack <br><br> <b>/umcu_pilot/rack_released</b>
+    }
+    s15 --> s1 : The RB-1 arrives at the HOME ROOM <br><br> <b>/umcu_pilot/arrived_at_home</b>
+
+    s1 --> s16 : A Recharge mission is received if we read "battery < 10.0" <br> We read from mqtt-odin-platform-smartbox-status-kafka <br><br> <b>/umcu_pilot/recharge_mission_received</b>
+    State Recharge {
+        s16 --> s17 : The elevator is down (there is no rack on top of the RB-1) <br><br> <b>/umcu_pilot/elevator_down == True</b>
+        note left of s17 : We may have the HOME ROOM and 3 other rooms, 2 of them with a docking station <br> The rack would be either in the HOME ROOM or in any of the 3 rooms
+        s17 --> s18 : The location is received from the RTLS <br> We read from kafka-odin-platform-iot-rtls-positions-mqtt <br><br> <b>/umcu_pilot/rack_position_received</b>
+        s18 --> s19 : The goal to pick up the rack is calculated <br><br> <b>/umcu_pilot/goal_calculated</b>
+        s19 --> s20 : The RB-1 arrives at the rack <br><br> <b>/umcu_pilot/arrived_at_rack</b>
+        s20 --> s21 : The RB-1 picks up the rack <br><br> <b>/umcu_pilot/rack_picked</b>
+        s21 --> s22 : The rack is fully charged <br> We read from mqtt-odin-platform-smartbox-status-kafka <br><br> <b>/umcu_pilot/rack_charged</b>
+        s22 --> s23 : The RB-1 releases the rack <br><br> <b>/umcu_pilot/rack_released</b>
+    }
+    s23 --> s1 : The RB-1 arrives at the HOME ROOM <br><br> <b>/umcu_pilot/arrived_at_home</b>
+```
 
 ### 1.1 Parameters
 
