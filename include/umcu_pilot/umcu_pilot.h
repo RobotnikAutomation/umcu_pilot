@@ -7,6 +7,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <math.h>
 #include <XmlRpcValue.h>
+#include <GeographicLib/UTMUPS.hpp>
+#include <Eigen/Dense>
 
 // Msgs
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -358,6 +360,11 @@ protected:
   XmlRpc::XmlRpcValue rtls_ids_;
   string rtls_id_1_;
   string rtls_id_2_;
+  void loadRtlsUTM(XmlRpc::XmlRpcValue &rtls_utm);
+  XmlRpc::XmlRpcValue rtls_utm_;
+  double rotation_angle_{0.0};
+  double translation_x_{0.0};
+  double translation_y_{0.0};
   /* UmcuPilot Stuff !*/
 };
 

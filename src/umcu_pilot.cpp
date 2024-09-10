@@ -48,7 +48,15 @@ void UmcuPilot::rosReadParams()
   }
   else
   {
-    RCOMPONENT_ERROR_STREAM("Couldn't read locations!");
+    RCOMPONENT_ERROR_STREAM("Couldn't read RTLS IDs!");
+  }
+  if (readParam(pnh_, "rtls_utm", rtls_utm_, rtls_utm_, required))
+  {
+    loadRtlsUTM(rtls_utm_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Couldn't read UTM info!");
   }
 }
 
@@ -1298,9 +1306,29 @@ void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
   {
     if (msg->data.id == rtls_id_1_ || msg->data.id == rtls_id_2_)
     {
-      rack_x_ = msg->data.data.x;
-      rack_y_ = msg->data.data.y;
-      rack_z_ = msg->data.data.z;
+      double lat = msg->data.data.x;
+      double lon = msg->data.data.y;
+      double utm_x, utm_y;
+      int zone;
+      bool northp;
+
+      // Convert latitude and longitude to UTM
+      GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, utm_x, utm_y);
+
+      // Rotation matrix
+      double theta = rotation_angle_;
+      double cos_theta = cos(theta);
+      double sin_theta = sin(theta);
+
+      Eigen::Matrix4d R;
+      R << cos_theta, -sin_theta, 0, translation_x_, sin_theta, cos_theta, 0, translation_y_, 0, 0, 1, 0, 0, 0, 0, 1;
+      Eigen::Vector4d utm(utm_x, utm_y, 0, 1);
+      Eigen::Matrix4d inv_R = R.inverse();
+      Eigen::Vector4d new_coords = inv_R * utm;
+
+      rack_x_ = new_coords[0];
+      rack_y_ = new_coords[1];
+      rack_z_ = 0;
 
       std_srvs::TriggerRequest rack_position_received_srv_request;
       std_srvs::TriggerResponse rack_position_received_srv_response;
@@ -2165,5 +2193,37 @@ void UmcuPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
 
   extractId("id_1", rtls_id_1_);
   extractId("id_2", rtls_id_2_);
+}
+
+void UmcuPilot::loadRtlsUTM(XmlRpc::XmlRpcValue &rtlsUTM)
+{
+  if (rtlsUTM.hasMember("rotation"))
+  {
+    rotation_angle_ = static_cast<double>(rtlsUTM["rot"]);
+    RCOMPONENT_INFO_STREAM("Map rotation (rot): " << rotation_angle_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Map rotation (rot) not found!");
+  }
+
+  if (rtlsUTM.hasMember("trans_x"))
+  {
+    translation_x_ = static_cast<double>(rtlsUTM["trans_x"]);
+    RCOMPONENT_INFO_STREAM("Map translation x (trans_x): " << translation_x_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Map translation x (trans_x) not found!");
+  }
+  if (rtlsUTM.hasMember("trans_y"))
+  {
+    translation_y_ = static_cast<double>(rtlsUTM["trans_y"]);
+    RCOMPONENT_INFO_STREAM("Map translation Y (trans_y): " << translation_y_);
+  }
+  else
+  {
+    RCOMPONENT_WARN_STREAM("Map translation Y (trans_y) not found!");
+  }
 }
 /* Callbacks !*/

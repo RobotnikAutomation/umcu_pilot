@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
 )
 
+find_package(Eigen3 REQUIRED)
+
 catkin_package(
   INCLUDE_DIRS
     include
@@ -30,6 +32,8 @@ catkin_package(
     std_msgs
     std_srvs
   DEPENDS
+    Eigen3
+    GeographicLib
 )
 
 ###########
@@ -39,6 +43,8 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
+  ${GeographicLib_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -48,6 +54,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Specify libraries to link a library target against
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
+  Geographic
 )
 
 ## Declare a C++ executable
@@ -58,6 +65,7 @@ add_dependencies(umcu_pilot_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(umcu_pilot_node
   ${catkin_LIBRARIES}
   ${PROJECT_NAME}
+  Geographic
 )
 
 #############

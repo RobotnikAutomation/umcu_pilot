@@ -1,3 +1,8 @@
+rtls_utm:
+  rot: 7.0 # Rotation of the map
+  trans_x: 650000.0 # Map origin
+  trans_y: 5700000.0 # Map origin
+
 rtls_ids:
   id_1: "ble-pd-601283DE0245"
   id_2: "ble-pd-601283DE0246"
@@ -36,7 +41,7 @@ locations:
       rot_x: 0.0
       rot_y: 0.0
       rot_z: -0.682153375602
-      rot_w: 0.73120911657      
+      rot_w: 0.73120911657
     place:
       x: 13.40576442356
       y: 21.06667079536
