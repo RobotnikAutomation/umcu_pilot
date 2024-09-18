@@ -1,88 +1,88 @@
 rtls_utm:
-  rot: 7.0 # Rotation of the map
-  trans_x: 650000.0 # Map origin
-  trans_y: 5700000.0 # Map origin
+  rot: 0.0 # Rotation of the map
+  trans_x: 649362.0 # Map origin
+  trans_y: 5772870.0 # Map origin
 
 rtls_ids:
-  id_1: "ble-pd-601283DE0245"
-  id_2: "ble-pd-601283DE0246"
+  id_1: "93f9a1a6-1755-4892-ab51-36381c1a7422"
+  id_2: "we_dont_use_it"
 
 locations:
-  home: # Surgery (right now Corridor)
-    robot:
-      x: 24.4469199982
-      y: 21.33334167164
+  home: # Patinetes
+    robot: # OK
+      x: 5.64617913633
+      y: 5.5740330304
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: 0.742626028641
-      rot_w: 0.669706339812
-    pre_pick:
-      x: 27.59425577978
-      y: 7.8308156872
+      rot_z: 0.972045692239
+      rot_w: 0.234791763483
+    pre_pick: # ???
+      x: 0.0
+      y: 0.0
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: -0.696361410595
-      rot_w: 0.717691288671
+      rot_z: 0.0
+      rot_w: 0.0
+    place: # ???
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      rot_x: 0.0
+      rot_y: 0.0
+      rot_z: 0.0
+      rot_w: 0.0
+  room_1: # Desktop
+    pre_pick: # OK
+      x: 2.54232247963
+      y: 10.1193858856
+      z: 0.0
+      rot_x: 0.0
+      rot_y: 0.0
+      rot_z: -0.998226482691
+      rot_w: 0.059530574119
+    place: # OK (same as pre_pick)
+      x: 2.33174311134
+      y: 9.89742716492
+      z: 0.0
+      rot_x: 0.0
+      rot_y: 0.0
+      rot_z: -0.998226482691
+      rot_w: 0.059530574119
+  room_2: # Office
+    pre_pick: # OK
+      x: -8.04164131826
+      y: 5.94523988348
+      z: 0.0
+      rot_x: 0.0
+      rot_y: 0.0
+      rot_z: 0.745559028373
+      rot_w: 0.666439596071
+    place: # OK (same as pre_pick)
+      x: -8.04164131826
+      y: 5.94523988348
+      z: 0.0
+      rot_x: 0.0
+      rot_y: 0.0
+      rot_z: 0.745559028373
+      rot_w: 0.666439596071
+  room_3: # South
     place:
-      x: 27.59425577978
-      y: 7.8308156872
+      x: -0.177770721258
+      y: -7.13178705524
       z: 0.0
       rot_x: 0.0
       rot_y: 0.0
-      rot_z: -0.696361410595
-      rot_w: 0.717691288671
-  room_1: # Restroom
-    pre_pick:
-      x: 13.40576442356
-      y: 21.06667079536
-      z: 0.0
-      rot_x: 0.0
-      rot_y: 0.0
-      rot_z: -0.682153375602
-      rot_w: 0.73120911657
-    place:
-      x: 13.40576442356
-      y: 21.06667079536
-      z: 0.0
-      rot_x: 0.0
-      rot_y: 0.0
-      rot_z: -0.682153375602
-      rot_w: 0.73120911657
-  room_2: # Meeting room (right now in Catering)
-    pre_pick:
-      x: 27.81900569757
-      y: 27.90127362401
-      z: 0.0
-      rot_x: 0.0
-      rot_y: 0.0
-      rot_z: 0.171921195891
-      rot_w: 0.981389288884
-    place:
-      x: 27.81900569757
-      y: 27.90122736240
-      z: 0.0
-      rot_x: 0.0
-      rot_y: 0.0
-      rot_z: 0.171921195891
-      rot_w: 0.981389288884
-  room_3: # Next to surgery
-    place:
-      x: 32.5858847388
-      y: 13.1203888284
-      z: 0.0
-      rot_x: 0.0
-      rot_y: 0.0
-      rot_z: -0.554330196531
-      rot_w: 0.832296842007
+      rot_z: -0.722581654054
+      rot_w: 0.691285580079
   docking_stations:
-    home: # Surgery (corridor so far)
-      x: 26.0332752762
-      y: 21.61848034854
-    room_1: # Restroom
-      x: 13.4742
-      y: 20.2464
-    room_2: # Meeting room (right now Catering)
-      x: 27.81525073601
-      y: 27.90945307368
+    home: # Patinetes - ???
+      x: 0.0
+      y: 0.0
+    room_1: # Desktop - OK
+      x: 1.05847710466
+      y: 10.0238690073
+    room_2: # Office - OK
+      x: -8.12776022723
+      y: 6.98304093156
