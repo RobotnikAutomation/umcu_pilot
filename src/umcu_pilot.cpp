@@ -349,8 +349,10 @@ void UmcuPilot::checkingRackPositionState()
 {
   RCOMPONENT_INFO_STREAM("4_CHECKING_RACK_POSITION");
 
+  ROS_WARN("Position received: %f, %f", rack_x_, rack_y_);
   double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
-  if (distance < 1.0)
+  ROS_WARN("The distance to the room 1 docking is %f", distance);
+  if (distance < 200.0)
   {
     RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of the docking station in ROOM 1.");
   }
@@ -361,7 +363,7 @@ void UmcuPilot::checkingRackPositionState()
 
   std_srvs::SetBool::Request correct_position_srv_request;
   std_srvs::SetBool::Response correct_position_srv_response;
-  correct_position_srv_request.data = (distance < 1.0);
+  correct_position_srv_request.data = (distance < 200.0);
 
   if (correctPositionServiceCb(correct_position_srv_request, correct_position_srv_response))
   {
@@ -1304,7 +1306,7 @@ void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
-    if (msg->data.id == rtls_id_1_ || msg->data.id == rtls_id_2_)
+    if (msg->id == rtls_id_1_ || msg->id == rtls_id_2_)
     {
       double lat = msg->data.data.x;
       double lon = msg->data.data.y;
@@ -1329,6 +1331,8 @@ void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
       rack_x_ = new_coords[0];
       rack_y_ = new_coords[1];
       rack_z_ = 0;
+
+      ROS_WARN("New coordinates: %f, %f", rack_x_, rack_y_);
 
       std_srvs::TriggerRequest rack_position_received_srv_request;
       std_srvs::TriggerResponse rack_position_received_srv_response;
@@ -2197,7 +2201,7 @@ void UmcuPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
 
 void UmcuPilot::loadRtlsUTM(XmlRpc::XmlRpcValue &rtlsUTM)
 {
-  if (rtlsUTM.hasMember("rotation"))
+  if (rtlsUTM.hasMember("rot"))
   {
     rotation_angle_ = static_cast<double>(rtlsUTM["rot"]);
     RCOMPONENT_INFO_STREAM("Map rotation (rot): " << rotation_angle_);
