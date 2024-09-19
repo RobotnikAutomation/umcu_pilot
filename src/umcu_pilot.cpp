@@ -1642,23 +1642,95 @@ void UmcuPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    if (message == go_to_room_1_ || message == go_to_room_2_ || message == go_to_room_3_)
+    if (message == go_to_room_1_)
     {
-      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // if (message == go_to_room_1_ || message == go_to_room_2_ || message == go_to_room_3_)
+      // {
+      // if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // {
+      //   next_room_x_ = msg->data.data.endLocation.position[0];
+      //   next_room_y_ = msg->data.data.endLocation.position[1];
+      //   next_room_z_ = msg->data.data.endLocation.position[2];
+      //   next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+      //   next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+      //   next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+      //   next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      // }
+      // else
+      // {
+      //   RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+      //   return;
+      // }
+
+      next_room_x_ = room_1_pre_pick_x_;
+      next_room_y_ = room_1_pre_pick_y_;
+      next_room_z_ = room_1_pre_pick_z_;
+      next_room_rot_x_ = room_1_pre_pick_rot_x_;
+      next_room_rot_y_ = room_1_pre_pick_rot_y_;
+      next_room_rot_z_ = room_1_pre_pick_rot_z_;
+      next_room_rot_w_ = room_1_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
+      go_to_next_room_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_to_next_room_srv_response;
+
+      if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
       {
-        next_room_x_ = msg->data.data.endLocation.position[0];
-        next_room_y_ = msg->data.data.endLocation.position[1];
-        next_room_z_ = msg->data.data.endLocation.position[2];
-        next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
-        next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
-        next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
-        next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+        if (go_to_next_room_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_to_next_room_srv_response.message.c_str());
+        }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
-        return;
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_to_next_room");
       }
+    }
+
+    else if (message == go_to_room_2_)
+    {
+      next_room_x_ = room_2_pre_pick_x_;
+      next_room_y_ = room_2_pre_pick_y_;
+      next_room_z_ = room_2_pre_pick_z_;
+      next_room_rot_x_ = room_2_pre_pick_rot_x_;
+      next_room_rot_y_ = room_2_pre_pick_rot_y_;
+      next_room_rot_z_ = room_2_pre_pick_rot_z_;
+      next_room_rot_w_ = room_2_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
+      go_to_next_room_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_to_next_room_srv_response;
+
+      if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
+      {
+        if (go_to_next_room_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_to_next_room_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_to_next_room");
+      }
+    }
+
+    else if (message == go_to_room_3_)
+    {
+      next_room_x_ = room_3_place_x_;
+      next_room_y_ = room_3_place_y_;
+      next_room_z_ = room_3_place_z_;
+      next_room_rot_x_ = room_3_place_rot_x_;
+      next_room_rot_y_ = room_3_place_rot_y_;
+      next_room_rot_z_ = room_3_place_rot_z_;
+      next_room_rot_w_ = room_3_place_rot_w_;
 
       odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
       go_to_next_room_srv_request.input = message;
