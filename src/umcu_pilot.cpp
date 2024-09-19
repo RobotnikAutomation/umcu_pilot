@@ -1576,10 +1576,10 @@ void UmcuPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
       next_room_x_ = room_2_pre_pick_x_;
       next_room_y_ = room_2_pre_pick_y_;
       next_room_z_ = room_2_pre_pick_z_;
-      next_room_rot_x_ = room__pre_pick_rot_x_;
-      next_room_rot_y_ = room__pre_pick_rot_y_;
-      next_room_rot_z_ = room__pre_pick_rot_z_;
-      next_room_rot_w_ = room__pre_pick_rot_w_;
+      next_room_rot_x_ = room_2_pre_pick_rot_x_;
+      next_room_rot_y_ = room_2_pre_pick_rot_y_;
+      next_room_rot_z_ = room_2_pre_pick_rot_z_;
+      next_room_rot_w_ = room_2_pre_pick_rot_w_;
 
       odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
       go_from_second_to_next_srv_request.input = message;
