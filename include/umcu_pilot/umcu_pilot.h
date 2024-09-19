@@ -193,6 +193,7 @@ protected:
   string previous_state_;
   float battery_status_{0.0};
   geometry_msgs::PoseWithCovarianceStamped pose_;
+  geometry_msgs::PoseStamped prepick_;
 
   //! State Machine
   void runRobotStateMachine();
