@@ -34,6 +34,8 @@ void UmcuPilot::rosReadParams()
   readParam(pnh_, "go_to_home_room", go_to_home_room_, "GO TO HOME ROOM", required);
   readParam(pnh_, "release_and_home", release_and_home_, "RELEASE AND HOME", required);
   readParam(pnh_, "bring_rack_home", bring_rack_home_, "BRING RACK HOME", required);
+  readParam(pnh_, "distance_limit", distance_limit_, 200.0, required);
+
   if (readParam(pnh_, "locations", locations_, locations_, required))
   {
     loadLocationParameters(locations_);
@@ -352,18 +354,18 @@ void UmcuPilot::checkingRackPositionState()
   ROS_WARN("Position received: %f, %f", rack_x_, rack_y_);
   double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
   ROS_WARN("The distance to the room 1 docking is %f", distance);
-  if (distance < 200.0)
+  if (distance < distance_limit_)
   {
-    RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of the docking station in ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is closer than " << distance_limit_ << " meter to the _a priori_ known position of the docking station in ROOM 1.");
   }
   else
   {
-    RCOMPONENT_INFO_STREAM("The rack is not closer than 1 meter to the _a priori known position of the docking station in ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is not closer than " << distance_limit_ << " meter to the _a priori known position of the docking station in ROOM 1.");
   }
 
   std_srvs::SetBool::Request correct_position_srv_request;
   std_srvs::SetBool::Response correct_position_srv_response;
-  correct_position_srv_request.data = (distance < 200.0);
+  correct_position_srv_request.data = (distance < distance_limit_);
 
   if (correctPositionServiceCb(correct_position_srv_request, correct_position_srv_response))
   {
@@ -1304,6 +1306,38 @@ void UmcuPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg
 // 3_GETTING_RACK_POSITION --> 4_CHECKING_RACK_POSITION, or 17_GETTING_RACK_POSITION --> 18_CALCULATING_GOAL
 void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
+  if(1)
+  {
+      double lat = msg->data.data.x;
+      double lon = msg->data.data.y;
+      double utm_x, utm_y;
+      int zone;
+      bool northp;
+
+      // Convert latitude and longitude to UTM
+      GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, utm_x, utm_y);
+
+      // Rotation matrix
+      double theta = rotation_angle_;
+      double cos_theta = cos(theta);
+      double sin_theta = sin(theta);
+
+      Eigen::Matrix4d R;
+      R << cos_theta, -sin_theta, 0, translation_x_, sin_theta, cos_theta, 0, translation_y_, 0, 0, 1, 0, 0, 0, 0, 1;
+      Eigen::Vector4d utm(utm_x, utm_y, 0, 1);
+      Eigen::Matrix4d inv_R = R.inverse();
+      Eigen::Vector4d new_coords = inv_R * utm;
+
+      rack_x_ = new_coords[0];
+      rack_y_ = new_coords[1];
+      rack_z_ = 0;
+
+      ROS_ERROR("New coordinates: %f, %f", rack_x_, rack_y_);
+
+      double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
+      ROS_WARN("The distance to the room 1 docking is %f", distance);
+  }
+
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
     if (msg->id == rtls_id_1_ || msg->id == rtls_id_2_)

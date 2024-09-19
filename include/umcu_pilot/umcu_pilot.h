@@ -282,6 +282,8 @@ protected:
   double rack_y_{0.0}; // Old, still needed
   double rack_z_{0.0}; // Old, still needed
 
+  double distance_limit_;
+
   // 4_CHECKING_RACK_POSITION
   void checkingRackPositionState();
 
