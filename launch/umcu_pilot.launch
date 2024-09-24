@@ -64,5 +64,6 @@
 			<param name="bring_rack_home" value="$(arg bring_rack_home)"/>
 		</node>
 	<!-- </group> -->
-
+    <node name="logger" pkg="logger" type="logger.py" output="screen">
+    </node>
 </launch>
