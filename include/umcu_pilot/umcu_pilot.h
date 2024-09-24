@@ -7,6 +7,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <math.h>
 #include <XmlRpcValue.h>
+#include <GeographicLib/UTMUPS.hpp>
+#include <Eigen/Dense>
 
 // Msgs
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -191,6 +193,7 @@ protected:
   string previous_state_;
   float battery_status_{0.0};
   geometry_msgs::PoseWithCovarianceStamped pose_;
+  geometry_msgs::PoseStamped prepick_;
 
   //! State Machine
   void runRobotStateMachine();
@@ -280,6 +283,8 @@ protected:
   double rack_y_{0.0}; // Old, still needed
   double rack_z_{0.0}; // Old, still needed
 
+  double distance_limit_;
+
   // 4_CHECKING_RACK_POSITION
   void checkingRackPositionState();
 
@@ -358,6 +363,11 @@ protected:
   XmlRpc::XmlRpcValue rtls_ids_;
   string rtls_id_1_;
   string rtls_id_2_;
+  void loadRtlsUTM(XmlRpc::XmlRpcValue &rtls_utm);
+  XmlRpc::XmlRpcValue rtls_utm_;
+  double rotation_angle_{0.0};
+  double translation_x_{0.0};
+  double translation_y_{0.0};
   /* UmcuPilot Stuff !*/
 };
 

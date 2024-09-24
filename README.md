@@ -4,9 +4,20 @@ The `umcu_pilot` package, based on RComponent structure. This package contains t
 
 ## Installation
 
-This package depends on:
+This package depends on the following ROS packages:
 - [`rcomponent`](https://github.com/RobotnikAutomation/rcomponent)
 - [`odin_msgs`](https://github.com/RobotnikAutomation/odin_msgs)
+- [`robotnik_msgs`](https://github.com/RobotnikAutomation/robotnik_msgs)
+
+It also depends on these libraries:
+- [`Eigen3`](https://eigen.tuxfamily.org/index.php?title=Main_Page) (for matrix operations)
+- [`GeographicLib`](https://geographiclib.sourceforge.io/) (for geographic conversions)
+
+Before building the package, make sure the required libraries are installed on your system.
+```bash
+sudo apt-get install libeigen3-dev
+sudo apt-get install libgeographic-dev
+```
 
 ## Bringup
 

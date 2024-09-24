@@ -34,6 +34,8 @@ void UmcuPilot::rosReadParams()
   readParam(pnh_, "go_to_home_room", go_to_home_room_, "GO TO HOME ROOM", required);
   readParam(pnh_, "release_and_home", release_and_home_, "RELEASE AND HOME", required);
   readParam(pnh_, "bring_rack_home", bring_rack_home_, "BRING RACK HOME", required);
+  readParam(pnh_, "distance_limit", distance_limit_, 200.0, required);
+
   if (readParam(pnh_, "locations", locations_, locations_, required))
   {
     loadLocationParameters(locations_);
@@ -48,7 +50,15 @@ void UmcuPilot::rosReadParams()
   }
   else
   {
-    RCOMPONENT_ERROR_STREAM("Couldn't read locations!");
+    RCOMPONENT_ERROR_STREAM("Couldn't read RTLS IDs!");
+  }
+  if (readParam(pnh_, "rtls_utm", rtls_utm_, rtls_utm_, required))
+  {
+    loadRtlsUTM(rtls_utm_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Couldn't read UTM info!");
   }
 }
 
@@ -339,21 +349,46 @@ void UmcuPilot::gettingRackPositionState()
 // The RB-1 checks if the rack is in the correct docking station (in ROOM 1)
 void UmcuPilot::checkingRackPositionState()
 {
+  std_srvs::SetBool::Request correct_position_srv_request;
+  std_srvs::SetBool::Response correct_position_srv_response;
+
   RCOMPONENT_INFO_STREAM("4_CHECKING_RACK_POSITION");
 
+  ROS_WARN("Position received: %f, %f", rack_x_, rack_y_);
   double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
-  if (distance < 1.0)
+  double distance_2 = std::sqrt(std::pow(rack_x_ - room_2_docking_x_, 2) + std::pow(rack_y_ - room_2_docking_y_, 2));
+
+  ROS_WARN("The distance to the room 1 docking is %f", distance);
+  ROS_WARN("The distance to the room 2 docking is %f", distance_2);
+
+  if (distance < distance_limit_)
   {
-    RCOMPONENT_INFO_STREAM("The rack is closer than 1 meter to the _a priori_ known position of the docking station in ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is closer than " << distance_limit_ << " meter to the _a priori_ known position of the docking station in ROOM 1.");
+    correct_position_srv_request.data = (distance < distance_limit_);
+    prepick_.pose.position.x = room_1_pre_pick_x_;
+    prepick_.pose.position.y = room_1_pre_pick_y_;
+    prepick_.pose.position.z = room_1_pre_pick_z_;
+    prepick_.pose.orientation.x = room_1_pre_pick_rot_x_;
+    prepick_.pose.orientation.y = room_1_pre_pick_rot_y_;
+    prepick_.pose.orientation.z = room_1_pre_pick_rot_z_;
+    prepick_.pose.orientation.w = room_1_pre_pick_rot_w_;
+  }
+  else if (distance_2 < distance_limit_)
+  {
+    RCOMPONENT_INFO_STREAM("The rack is closer than " << distance_limit_ << " meter to the _a priori_ known position of the docking station in ROOM 2.");
+    correct_position_srv_request.data = (distance_2 < distance_limit_);
+    prepick_.pose.position.x = room_2_pre_pick_x_;
+    prepick_.pose.position.y = room_2_pre_pick_y_;
+    prepick_.pose.position.z = room_2_pre_pick_z_;
+    prepick_.pose.orientation.x = room_2_pre_pick_rot_x_;
+    prepick_.pose.orientation.y = room_2_pre_pick_rot_y_;
+    prepick_.pose.orientation.z = room_2_pre_pick_rot_z_;
+    prepick_.pose.orientation.w = room_2_pre_pick_rot_w_;
   }
   else
   {
-    RCOMPONENT_INFO_STREAM("The rack is not closer than 1 meter to the _a priori known position of the docking station in ROOM 1.");
+    RCOMPONENT_INFO_STREAM("The rack is not closer than " << distance_limit_ << " meter to any known position of the docking station.");
   }
-
-  std_srvs::SetBool::Request correct_position_srv_request;
-  std_srvs::SetBool::Response correct_position_srv_response;
-  correct_position_srv_request.data = (distance < 1.0);
 
   if (correctPositionServiceCb(correct_position_srv_request, correct_position_srv_response))
   {
@@ -387,13 +422,7 @@ void UmcuPilot::navigatingToRackState()
 
       move_base_goal_.target_pose.header.stamp = ros::Time::now();
       move_base_goal_.target_pose.header.frame_id = "robot_map";
-      move_base_goal_.target_pose.pose.position.x = room_1_pre_pick_x_;
-      move_base_goal_.target_pose.pose.position.y = room_1_pre_pick_y_;
-      move_base_goal_.target_pose.pose.position.z = room_1_pre_pick_z_;
-      move_base_goal_.target_pose.pose.orientation.x = room_1_pre_pick_rot_x_;
-      move_base_goal_.target_pose.pose.orientation.y = room_1_pre_pick_rot_y_;
-      move_base_goal_.target_pose.pose.orientation.z = room_1_pre_pick_rot_z_;
-      move_base_goal_.target_pose.pose.orientation.w = room_1_pre_pick_rot_w_;
+      move_base_goal_.target_pose.pose = prepick_.pose;
       move_base_ac_->sendGoal(move_base_goal_, boost::bind(&UmcuPilot::moveBaseResultCb, this, _1, _2));
 
       navigation_command_sent_ = true;
@@ -846,9 +875,11 @@ bool UmcuPilot::rackPickedServiceCb(std_srvs::Trigger::Request &request, std_srv
 {
   if (current_state_ == "6_PICKING_RACK")
   {
-    changeState("7_WAITING_IN_FIRST_ROOM", "Rack picked!");
+    // changeState("7_WAITING_IN_FIRST_ROOM", "Rack picked!");
+    changeState("9_WAITING_IN_SECOND_ROOM", "Rack picked!");
     response.success = true;
-    response.message = "Rack picked! Switching from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM.";
+    // response.message = "Rack picked! Switching from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM.";
+    response.message = "Rack picked! Switching from 6_PICKING_RACK to 9_WAITING_IN_SECOND_ROOM.";
     return true;
   }
   else if (current_state_ == "20_PICKING_RACK")
@@ -1294,13 +1325,67 @@ void UmcuPilot::elevatorSubCb(const robotnik_msgs::ElevatorStatus::ConstPtr &msg
 // 3_GETTING_RACK_POSITION --> 4_CHECKING_RACK_POSITION, or 17_GETTING_RACK_POSITION --> 18_CALCULATING_GOAL
 void UmcuPilot::rtlsSubCb(const odin_msgs::RTLSBase::ConstPtr &msg)
 {
+  if (1)
+  {
+    double lat = msg->data.data.x;
+    double lon = msg->data.data.y;
+    double utm_x, utm_y;
+    int zone;
+    bool northp;
+
+    // Convert latitude and longitude to UTM
+    GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, utm_x, utm_y);
+
+    // Rotation matrix
+    double theta = rotation_angle_;
+    double cos_theta = cos(theta);
+    double sin_theta = sin(theta);
+
+    Eigen::Matrix4d R;
+    R << cos_theta, -sin_theta, 0, translation_x_, sin_theta, cos_theta, 0, translation_y_, 0, 0, 1, 0, 0, 0, 0, 1;
+    Eigen::Vector4d utm(utm_x, utm_y, 0, 1);
+    Eigen::Matrix4d inv_R = R.inverse();
+    Eigen::Vector4d new_coords = inv_R * utm;
+
+    rack_x_ = new_coords[0];
+    rack_y_ = new_coords[1];
+    rack_z_ = 0;
+
+    ROS_ERROR("New coordinates: %f, %f", rack_x_, rack_y_);
+
+    double distance = std::sqrt(std::pow(rack_x_ - room_1_docking_x_, 2) + std::pow(rack_y_ - room_1_docking_y_, 2));
+    ROS_WARN("The distance to the room 1 docking is %f", distance);
+  }
+
   if (current_state_ == "3_GETTING_RACK_POSITION")
   {
-    if (msg->data.id == rtls_id_1_ || msg->data.id == rtls_id_2_)
+    if (msg->id == rtls_id_1_ || msg->id == rtls_id_2_)
     {
-      rack_x_ = msg->data.data.x;
-      rack_y_ = msg->data.data.y;
-      rack_z_ = msg->data.data.z;
+      double lat = msg->data.data.x;
+      double lon = msg->data.data.y;
+      double utm_x, utm_y;
+      int zone;
+      bool northp;
+
+      // Convert latitude and longitude to UTM
+      GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, utm_x, utm_y);
+
+      // Rotation matrix
+      double theta = rotation_angle_;
+      double cos_theta = cos(theta);
+      double sin_theta = sin(theta);
+
+      Eigen::Matrix4d R;
+      R << cos_theta, -sin_theta, 0, translation_x_, sin_theta, cos_theta, 0, translation_y_, 0, 0, 1, 0, 0, 0, 0, 1;
+      Eigen::Vector4d utm(utm_x, utm_y, 0, 1);
+      Eigen::Matrix4d inv_R = R.inverse();
+      Eigen::Vector4d new_coords = inv_R * utm;
+
+      rack_x_ = new_coords[0];
+      rack_y_ = new_coords[1];
+      rack_z_ = 0;
+
+      ROS_WARN("New coordinates: %f, %f", rack_x_, rack_y_);
 
       std_srvs::TriggerRequest rack_position_received_srv_request;
       std_srvs::TriggerResponse rack_position_received_srv_response;
@@ -1486,6 +1571,36 @@ void UmcuPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
         RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_second_to_next_room");
       }
     }
+    if (message == go_to_room_2_)
+    {
+      next_room_x_ = room_2_pre_pick_x_;
+      next_room_y_ = room_2_pre_pick_y_;
+      next_room_z_ = room_2_pre_pick_z_;
+      next_room_rot_x_ = room_2_pre_pick_rot_x_;
+      next_room_rot_y_ = room_2_pre_pick_rot_y_;
+      next_room_rot_z_ = room_2_pre_pick_rot_z_;
+      next_room_rot_w_ = room_2_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_from_second_to_next_srv_request;
+      go_from_second_to_next_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_from_second_to_next_srv_response;
+
+      if (goFromSecondToNextRoomServiceCb(go_from_second_to_next_srv_request, go_from_second_to_next_srv_response))
+      {
+        if (go_from_second_to_next_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 9_WAITING_IN_SECOND_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_from_second_to_next_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_from_second_to_next_room");
+      }
+    }
     else if (message == go_to_room_3_)
     {
       next_room_x_ = room_3_place_x_;
@@ -1610,23 +1725,95 @@ void UmcuPilot::hmiSubCb(const odin_msgs::HMIBase::ConstPtr &msg)
     RCOMPONENT_WARN_STREAM("Received message from HMI: " + message);
 
     // 11_WAITING_IN_NEXT_ROOM --> 10_NAVIGATING_TO_NEXT_ROOM
-    if (message == go_to_room_1_ || message == go_to_room_2_ || message == go_to_room_3_)
+    if (message == go_to_room_1_)
     {
-      if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // if (message == go_to_room_1_ || message == go_to_room_2_ || message == go_to_room_3_)
+      // {
+      // if (msg->data.data.endLocation.position.size() > 1 && msg->data.data.endLocation.orientation.size() > 1)
+      // {
+      //   next_room_x_ = msg->data.data.endLocation.position[0];
+      //   next_room_y_ = msg->data.data.endLocation.position[1];
+      //   next_room_z_ = msg->data.data.endLocation.position[2];
+      //   next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
+      //   next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
+      //   next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
+      //   next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+      // }
+      // else
+      // {
+      //   RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
+      //   return;
+      // }
+
+      next_room_x_ = room_1_pre_pick_x_;
+      next_room_y_ = room_1_pre_pick_y_;
+      next_room_z_ = room_1_pre_pick_z_;
+      next_room_rot_x_ = room_1_pre_pick_rot_x_;
+      next_room_rot_y_ = room_1_pre_pick_rot_y_;
+      next_room_rot_z_ = room_1_pre_pick_rot_z_;
+      next_room_rot_w_ = room_1_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
+      go_to_next_room_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_to_next_room_srv_response;
+
+      if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
       {
-        next_room_x_ = msg->data.data.endLocation.position[0];
-        next_room_y_ = msg->data.data.endLocation.position[1];
-        next_room_z_ = msg->data.data.endLocation.position[2];
-        next_room_rot_x_ = msg->data.data.endLocation.orientation[0];
-        next_room_rot_y_ = msg->data.data.endLocation.orientation[1];
-        next_room_rot_z_ = msg->data.data.endLocation.orientation[2];
-        next_room_rot_w_ = msg->data.data.endLocation.orientation[3];
+        if (go_to_next_room_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_to_next_room_srv_response.message.c_str());
+        }
       }
       else
       {
-        RCOMPONENT_ERROR_STREAM("Invalid position and orientation data");
-        return;
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_to_next_room");
       }
+    }
+
+    else if (message == go_to_room_2_)
+    {
+      next_room_x_ = room_2_pre_pick_x_;
+      next_room_y_ = room_2_pre_pick_y_;
+      next_room_z_ = room_2_pre_pick_z_;
+      next_room_rot_x_ = room_2_pre_pick_rot_x_;
+      next_room_rot_y_ = room_2_pre_pick_rot_y_;
+      next_room_rot_z_ = room_2_pre_pick_rot_z_;
+      next_room_rot_w_ = room_2_pre_pick_rot_w_;
+
+      odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
+      go_to_next_room_srv_request.input = message;
+      odin_msgs::StringTriggerResponse go_to_next_room_srv_response;
+
+      if (goToNextRoomServiceCb(go_to_next_room_srv_request, go_to_next_room_srv_response))
+      {
+        if (go_to_next_room_srv_response.success)
+        {
+          RCOMPONENT_INFO_STREAM("Successfully switched from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM");
+        }
+        else
+        {
+          RCOMPONENT_WARN_STREAM("Failed to switch from 11_WAITING_IN_NEXT_ROOM to 10_NAVIGATING_TO_NEXT_ROOM: " << go_to_next_room_srv_response.message.c_str());
+        }
+      }
+      else
+      {
+        RCOMPONENT_ERROR_STREAM("Failed to call service /umcu_pilot/go_to_next_room");
+      }
+    }
+
+    else if (message == go_to_room_3_)
+    {
+      next_room_x_ = room_3_place_x_;
+      next_room_y_ = room_3_place_y_;
+      next_room_z_ = room_3_place_z_;
+      next_room_rot_x_ = room_3_place_rot_x_;
+      next_room_rot_y_ = room_3_place_rot_y_;
+      next_room_rot_z_ = room_3_place_rot_z_;
+      next_room_rot_w_ = room_3_place_rot_w_;
 
       odin_msgs::StringTriggerRequest go_to_next_room_srv_request;
       go_to_next_room_srv_request.input = message;
@@ -1917,11 +2104,13 @@ void UmcuPilot::commandSequencerResultCb(const actionlib::SimpleClientGoalState 
       {
         if (command_sequencer_srv_response.success)
         {
-          RCOMPONENT_INFO_STREAM("Successfully switched from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM");
+          // RCOMPONENT_INFO_STREAM("Successfully switched from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM");
+          RCOMPONENT_INFO_STREAM("Successfully switched from 6_PICKING_RACK to 9_WAITING_IN_SECOND_ROOM");
         }
         else
         {
-          RCOMPONENT_WARN_STREAM("Failed to switch from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM: " << command_sequencer_srv_response.message.c_str());
+          // RCOMPONENT_WARN_STREAM("Failed to switch from 6_PICKING_RACK to 7_WAITING_IN_FIRST_ROOM: " << command_sequencer_srv_response.message.c_str());
+          RCOMPONENT_WARN_STREAM("Failed to switch from 6_PICKING_RACK to 9_WAITING_IN_SECOND_ROOM: " << command_sequencer_srv_response.message.c_str());
         }
       }
       else
@@ -2165,5 +2354,37 @@ void UmcuPilot::loadRtlsIds(XmlRpc::XmlRpcValue &rtlsIds)
 
   extractId("id_1", rtls_id_1_);
   extractId("id_2", rtls_id_2_);
+}
+
+void UmcuPilot::loadRtlsUTM(XmlRpc::XmlRpcValue &rtlsUTM)
+{
+  if (rtlsUTM.hasMember("rot"))
+  {
+    rotation_angle_ = static_cast<double>(rtlsUTM["rot"]);
+    RCOMPONENT_INFO_STREAM("Map rotation (rot): " << rotation_angle_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Map rotation (rot) not found!");
+  }
+
+  if (rtlsUTM.hasMember("trans_x"))
+  {
+    translation_x_ = static_cast<double>(rtlsUTM["trans_x"]);
+    RCOMPONENT_INFO_STREAM("Map translation x (trans_x): " << translation_x_);
+  }
+  else
+  {
+    RCOMPONENT_ERROR_STREAM("Map translation x (trans_x) not found!");
+  }
+  if (rtlsUTM.hasMember("trans_y"))
+  {
+    translation_y_ = static_cast<double>(rtlsUTM["trans_y"]);
+    RCOMPONENT_INFO_STREAM("Map translation Y (trans_y): " << translation_y_);
+  }
+  else
+  {
+    RCOMPONENT_WARN_STREAM("Map translation Y (trans_y) not found!");
+  }
 }
 /* Callbacks !*/

@@ -7,6 +7,10 @@
 	<!-- Set namespace -->
 	<arg name="id_robot" default="robot"/>
 
+
+        <!-- Maximum distance between the rooms and the rack to be considered inside -->
+        <arg name="distance_limit" default="20.0"/>
+
 	<!-- Desired frequency -->
 	<arg name="desired_freq" default="10.0" />
 
@@ -39,6 +43,7 @@
 		<node name="umcu_pilot" pkg="umcu_pilot" type="umcu_pilot_node" output="screen" respawn="false" launch-prefix="$(arg launch_prefix)">
 			<rosparam file="$(find umcu_pilot)/config/locations.yaml" command="load" />
 			<param name="desired_freq" value="$(arg desired_freq)"/>
+			<param name="distance_limit" value="$(arg distance_limit)"/>
 			<param name="robot_status_pub" value="$(arg robot_status_pub)"/>
 			<param name="robot_result_pub" value="$(arg robot_result_pub)"/>
 			<param name="rtls_sub" value="$(arg rtls_sub)"/>
@@ -59,5 +64,6 @@
 			<param name="bring_rack_home" value="$(arg bring_rack_home)"/>
 		</node>
 	<!-- </group> -->
-
+    <node name="logger" pkg="logger" type="logger.py" output="screen">
+    </node>
 </launch>
