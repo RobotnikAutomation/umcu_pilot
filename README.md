@@ -1,6 +1,6 @@
 # umcu_pilot
 
-The `umcu_pilot` package, based on RComponent structure. This package contains the necessary node to run during the UMCU pilot of the [ODIN project](https://odin-smarthospitals.eu/) at the [University Medical Center Utrecht](https://www.umcutrecht.nl/en) in Utrecht in June/July 2024.
+The `umcu_pilot` package, based on RComponent structure. This package contains the necessary node to run during the UMCU pilot of the [ODIN project](https://odin-smarthospitals.eu/) at the [University Medical Center Utrecht](https://www.umcutrecht.nl/en) in Utrecht in September 2024.
 
 ## Installation
 
@@ -13,7 +13,7 @@ It also depends on these libraries:
 - [`Eigen3`](https://eigen.tuxfamily.org/index.php?title=Main_Page) (for matrix operations)
 - [`GeographicLib`](https://geographiclib.sourceforge.io/) (for geographic conversions)
 
-Before building the package, make sure the required libraries are installed on your system.
+Before building the package, make sure the required libraries are installed on your system:
 ```bash
 sudo apt-get install libeigen3-dev
 sudo apt-get install libgeographic-dev
@@ -37,7 +37,7 @@ stateDiagram-v2
     s1: <b>1. WAITING_FOR_MISSION</b> <br><br> The RB-1 waits for a mission in the HOME ROOM
     s2: <b>2. CHECKING_ELEVATOR</b> <br><br> The RB-1 checks the elevator state (up or down)
     s3: <b>3. GETTING_RACK_POSITION</b> <br><br> The RB-1 gets the approximate rack position from the RTLS
-    s4: <b>4. CHECKING_RACK_POSITION</b> <br><br> The RB-1 checks if the rack is in the correct room (ROOM 1)
+    s4: <b>4. CHECKING_RACK_POSITION</b> <br><br> The RB-1 checks if the rack is in the correct room (ROOM 1 or ROOM 2)
     s5: <b>5. NAVIGATING_TO_RACK</b> <br><br> The RB-1 navigates to the a priori known position of the rack
     s6: <b>6. PICKING_RACK</b> <br><br> The RB-1 picks up the rack – which should be in the docking station
     s7: <b>7. WAITING_IN_FIRST_ROOM</b> <br><br> The RB-1 waits in the first room until it is told to navigate to the next room by the hospital staff
@@ -65,9 +65,10 @@ stateDiagram-v2
         s4 --> s3 : The rack is not in the correct room <br><br> <b>/umcu_pilot/correct_position == False</b>
         s4 --> s5 : The rack is in the correct room (e.g., the distance between the RTLS-provided coordinates and the a priori known position is below 1 m) <br><br> <b>/umcu_pilot/correct_position == True</b>
         s5 --> s6 : The RB-1 arrives at the rack <br><br> <b>/umcu_pilot/arrived_at_rack</b>
-        s6 --> s7 : The RB-1 picks up the rack <br><br> <b>/umcu_pilot/rack_picked</b>
-        s7 --> s8 : The "GO TO ROOM X" is pressed in the HMI (e.g., "GO TO ROOM 2") <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_from_first_to_second_room</b>
-        s8 --> s9 : The RB-1 arrives at second room <br><br> <b>/umcu_pilot/arrived_at_second_room</b>
+        s6 --> s9 : The RB-1 picks up the rack <br><br> <b>/umcu_pilot/rack_picked</b>
+        %% s6 --> s7 : The RB-1 picks up the rack <br><br> <b>/umcu_pilot/rack_picked</b>
+        %% s7 --> s8 : The "GO TO ROOM X" is pressed in the HMI (e.g., "GO TO ROOM 2") <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_from_first_to_second_room</b>
+        %% s8 --> s9 : The RB-1 arrives at second room <br><br> <b>/umcu_pilot/arrived_at_second_room</b>
         s9 --> s10 : The "GO TO ROOM X" is pressed in the HMI (e.g., "GO TO ROOM 3") <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/go_from_second_to_next_room</b>
         s9 --> s12 : The "BRING RACK HOME" button is pressed in the HMI <br> We read from mqtt-odin-platform-robot-control-kafka <br><br> <b>/umcu_pilot/release_rack == False</b>
         s10 --> s11 : The RB-1 arrives at the next room <br><br> <b>/umcu_pilot/arrived_at_next_room</b>
@@ -133,7 +134,7 @@ stateDiagram-v2
   If the message value received in the `data.battery` field is below `10.0` and the current state is **`1. WAITING_FOR_MISSION`**, the state is changed to **`16. CHECKING_ELEVATOR`**, and the _Recharge_ mission starts.
 
 * **`/umcu_pilot/RTLS` (odin_msgs/RTLS)**\
-  From this topic we obtain the coordinates used to check if the rack is in the correct room if it is in the **`3. GETTING_RACK_POSITION`** state or the coordinates where the robot must navigate if it is in the **`17. GETTING_RACK_POSITION`**. We retrieve them from the `data.x`, `data.y` and `data.z` fields.
+  From this topic we obtain the coordinates used to check if the rack is in the correct room if it is in the **`3. GETTING_RACK_POSITION`** state or the coordinates where the robot must navigate if it is in the **`17. GETTING_RACK_POSITION`**. We retrieve them from the `data.x` and `data.y` fields.
 
 ### 1.3 Published Topics
 
@@ -229,7 +230,7 @@ Services are provided for the manual transition between states.
 
 ### 1.5 Services Called
 
-No Service called.
+No Services called.
 
 ### 1.6 Action Servers
 
